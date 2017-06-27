@@ -61,12 +61,12 @@ namespace HUX.Buttons
             iconLookup = new Dictionary<string, Texture2D>();
             iconKeys = new List<string>();
 
-            // Store all icons in iconLookup via reflection
-            #if USE_WINRT
+// Store all icons in iconLookup via reflection
+#if USE_WINRT
 		    var fields = GetType().GetTypeInfo().DeclaredFields;
-            #else
+#else
             var fields = this.GetType().GetFields();
-            #endif
+#endif
             foreach (var field in fields)
             {
                 if (field.FieldType == typeof(Texture2D) && !field.Name.StartsWith("_"))
