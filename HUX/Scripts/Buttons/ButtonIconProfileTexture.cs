@@ -6,6 +6,7 @@
 #define USE_WINRT
 #endif
 
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
