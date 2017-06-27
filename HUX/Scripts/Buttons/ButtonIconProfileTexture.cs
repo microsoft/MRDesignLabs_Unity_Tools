@@ -2,6 +2,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
+#if UNITY_WINRT && !UNITY_EDITOR
+#define USE_WINRT
+#endif
+
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
