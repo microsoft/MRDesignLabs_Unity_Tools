@@ -14,6 +14,13 @@ namespace HUX
         {
             CompoundButtonSpeech speechButton = (CompoundButtonSpeech)target;
 
+            bool microphoneEnabled = PlayerSettings.WSA.GetCapability(PlayerSettings.WSACapability.Microphone);
+            if (!microphoneEnabled) {
+                HUXEditorUtils.WarningMessage("Microphone capability not present. Speech recognition will be disabled.", "Enable Microphone Capability", EnableMicrophone);
+                HUXEditorUtils.SaveChanges(target);
+                return;
+            }
+
             HUXEditorUtils.BeginSectionBox("Keyword source");
             speechButton.KeywordSource = (CompoundButtonSpeech.KeywordSourceEnum) EditorGUILayout.EnumPopup(speechButton.KeywordSource);
             CompoundButtonText text = speechButton.GetComponent<CompoundButtonText>();
@@ -44,6 +51,10 @@ namespace HUX
             HUXEditorUtils.EndSectionBox();
 
             HUXEditorUtils.SaveChanges(target);
+        }
+
+        private void EnableMicrophone() {
+            PlayerSettings.WSA.SetCapability(PlayerSettings.WSACapability.Microphone, true);
         }
 
         private void AddText ()

@@ -39,6 +39,11 @@ namespace HUX.Buttons
 
         public void Start ()
         {
+            // Disable if no microphone devices are found
+            if (Microphone.devices.Length == 0) {
+                enabled = false;
+                return;
+            }
 
             if (KeywordSource == KeywordSourceEnum.None)
                 return;
@@ -63,10 +68,13 @@ namespace HUX.Buttons
 
         public void KeywordHandler(KeywordRecognizedEventArgs args)
         {
+            if (!gameObject.activeSelf || !enabled)
+                return;
+
             Debug.Log("Keyword handler called in " + name + " for keyword " + args.text + " with confidence level " + args.confidence);
             // Send a pressed message to the button through the InteractionManager
             // (This will ensure InteractionReceivers also receive the event)
-            // TEMP use a send message event
+
             gameObject.SendMessageUpwards("OnTapped", SendMessageOptions.DontRequireReceiver);
         }
     }
