@@ -9,10 +9,8 @@ namespace HUX.Buttons
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(CompoundButton))]
-    public class CompoundButtonIcon : MonoBehaviour
+    public class CompoundButtonIcon : ProfileButtonBase<ButtonIconProfile>
     {
-        public ButtonIconProfile IconProfile;
-
         /// <summary>
         /// Turns off the icon entirely
         /// </summary>
@@ -137,7 +135,7 @@ namespace HUX.Buttons
         private void SetIconName(string newName)
         {
             // Avoid exploding if possible
-            if (IconProfile == null)
+            if (Profile == null)
                 return;
 
             if (IconRenderer == null)
@@ -149,22 +147,22 @@ namespace HUX.Buttons
                 return;
             }
 
-            if (IconProfile.IconMaterial == null || IconProfile.IconMesh == null)
+            if (Profile.IconMaterial == null || Profile.IconMesh == null)
                 return;
 
             // Instantiate our local material now, if we don't have one
             if (instantiatedMaterial == null)
             {
-                instantiatedMaterial = new Material(IconProfile.IconMaterial);
-                instantiatedMaterial.name = IconProfile.IconMaterial.name;
+                instantiatedMaterial = new Material(Profile.IconMaterial);
+                instantiatedMaterial.name = Profile.IconMaterial.name;
             }
             IconRenderer.sharedMaterial = instantiatedMaterial;
             
             // Instantiate our local mesh now, if we don't have one
             if (instantiatedMesh == null)
             {
-                instantiatedMesh = Mesh.Instantiate (IconProfile.IconMesh) as Mesh;
-                instantiatedMesh.name = IconProfile.IconMesh.name;
+                instantiatedMesh = Mesh.Instantiate (Profile.IconMesh) as Mesh;
+                instantiatedMesh.name = Profile.IconMesh.name;
             }
             IconMeshFilter.sharedMesh = instantiatedMesh;
 
@@ -172,7 +170,7 @@ namespace HUX.Buttons
             {
                 // Use the default mesh for override icons
                 IconRenderer.enabled = true;
-                IconMeshFilter.sharedMesh = IconProfile.IconMesh;
+                IconMeshFilter.sharedMesh = Profile.IconMesh;
                 IconMeshFilter.transform.localScale = Vector3.one;
                 instantiatedMaterial.mainTexture = iconOverride;
                 return;
@@ -187,7 +185,7 @@ namespace HUX.Buttons
             }
             
             // Moment of truth - try to get our icon
-            if (!IconProfile.GetIcon(iconName, IconRenderer, IconMeshFilter, true))
+            if (!Profile.GetIcon(iconName, IconRenderer, IconMeshFilter, true))
             {
                 IconRenderer.enabled = false;
                 return;
@@ -221,7 +219,7 @@ namespace HUX.Buttons
 
         private void RefreshAlpha()
         {
-            string alphaColorProperty = string.IsNullOrEmpty(IconProfile.AlphaColorProperty) ? "_Color" : IconProfile.AlphaColorProperty;
+            string alphaColorProperty = string.IsNullOrEmpty(Profile.AlphaColorProperty) ? "_Color" : Profile.AlphaColorProperty;
             if (instantiatedMaterial != null)
             {
                 Color c = instantiatedMaterial.GetColor(alphaColorProperty);
@@ -253,16 +251,16 @@ namespace HUX.Buttons
             }
 
             // Reset to default mats and meshes
-            if (IconProfile != null)
+            if (Profile != null)
             {
                 if (IconRenderer != null)
                 {
                     // Restore the icon material to the renderer
-                    IconRenderer.sharedMaterial = IconProfile.IconMaterial;
+                    IconRenderer.sharedMaterial = Profile.IconMaterial;
                 }
                 if (IconMeshFilter != null)
                 {
-                    IconMeshFilter.sharedMesh = IconProfile.IconMesh;
+                    IconMeshFilter.sharedMesh = Profile.IconMesh;
                 }
             }
             // Reset our alpha to the alpha target
@@ -273,15 +271,15 @@ namespace HUX.Buttons
         {
             float startTime = Time.time;
             Color color = Color.white;
-            string alphaColorProperty = string.IsNullOrEmpty(IconProfile.AlphaColorProperty) ? "_Color" : IconProfile.AlphaColorProperty;
+            string alphaColorProperty = string.IsNullOrEmpty(Profile.AlphaColorProperty) ? "_Color" : Profile.AlphaColorProperty;
             if (instantiatedMaterial != null)
             {
                 color = instantiatedMaterial.GetColor(alphaColorProperty);
                 color.a = alpha;
             }
-            while (Time.time < startTime + IconProfile.AlphaTransitionSpeed)
+            while (Time.time < startTime + Profile.AlphaTransitionSpeed)
             {
-                alpha = Mathf.Lerp(alpha, alphaTarget, (Time.time - startTime) / IconProfile.AlphaTransitionSpeed);
+                alpha = Mathf.Lerp(alpha, alphaTarget, (Time.time - startTime) / Profile.AlphaTransitionSpeed);
                 if (instantiatedMaterial != null && !string.IsNullOrEmpty(alphaColorProperty))
                 {
                     color.a = alpha;

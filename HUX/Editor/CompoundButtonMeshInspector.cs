@@ -16,9 +16,9 @@ namespace HUX
             CompoundButtonMesh meshButton = (CompoundButtonMesh)target;
 
             GUI.color = HUXEditorUtils.DefaultColor;
-            meshButton.MeshProfile = HUXEditorUtils.DrawProfileField<ButtonMeshProfile>(meshButton.MeshProfile);
+            meshButton.Profile = HUXEditorUtils.DrawProfileField<ButtonMeshProfile>(meshButton.Profile);
 
-            if (meshButton.MeshProfile == null)
+            if (meshButton.Profile == null)
             {
                 HUXEditorUtils.SaveChanges(target);
                 return;
@@ -33,7 +33,7 @@ namespace HUX
             {
                 // Check to see if offset & scale match any of the button defaults
                 bool foundCloseState = false;
-                foreach (CompoundButtonMesh.MeshButtonDatum datum in meshButton.MeshProfile.ButtonStates)
+                foreach (CompoundButtonMesh.MeshButtonDatum datum in meshButton.Profile.ButtonStates)
                 {
                     if (meshButton.TargetTransform.localPosition == datum.Offset && meshButton.TargetTransform.localScale == datum.Scale)
                     {
@@ -59,13 +59,13 @@ namespace HUX
                 HUXEditorUtils.DrawSubtleMiniLabel("(No renderer specified)");
             } else
             {
-                meshButton.MeshProfile.ColorPropertyName = HUXEditorUtils.MaterialPropertyName(
-                    meshButton.MeshProfile.ColorPropertyName,
+                meshButton.Profile.ColorPropertyName = HUXEditorUtils.MaterialPropertyName(
+                    meshButton.Profile.ColorPropertyName,
                     meshButton.Renderer.sharedMaterial,
                     ShaderUtil.ShaderPropertyType.Color);
 
-                meshButton.MeshProfile.ValuePropertyName = HUXEditorUtils.MaterialPropertyName(
-                    meshButton.MeshProfile.ValuePropertyName,
+                meshButton.Profile.ValuePropertyName = HUXEditorUtils.MaterialPropertyName(
+                    meshButton.Profile.ValuePropertyName,
                     meshButton.Renderer.sharedMaterial,
                     ShaderUtil.ShaderPropertyType.Float);
                 
@@ -74,9 +74,9 @@ namespace HUX
             HUXEditorUtils.EndSectionBox();
 
             // Draw the profile
-            HUXEditorUtils.DrawProfileInspector(meshButton.MeshProfile, meshButton);
+            HUXEditorUtils.DrawProfileInspector(meshButton.Profile, meshButton);
 
-            HUXEditorUtils.SaveChanges(target, meshButton.MeshProfile);
+            HUXEditorUtils.SaveChanges(target, meshButton.Profile);
         }
     }
 }

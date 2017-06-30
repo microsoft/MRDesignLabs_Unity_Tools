@@ -10,11 +10,9 @@ namespace HUX.Buttons
     /// A convenient way to play sounds in response to button actions / states
     /// </summary>
     [RequireComponent(typeof(CompoundButton))]
-    public class CompoundButtonSounds : MonoBehaviour
+    public class CompoundButtonSounds : ProfileButtonBase<ButtonSoundProfile>
     {
         const float MinTimeBetweenSameClip = 0.1f;
-
-        public ButtonSoundProfile SoundProfile;
         
         [SerializeField]
         private AudioSource audioSource;
@@ -46,7 +44,7 @@ namespace HUX.Buttons
             if (!gameObject.activeSelf || !gameObject.activeInHierarchy)
                 return;
 
-            if (SoundProfile == null)
+            if (Profile == null)
             {
                 Debug.LogError("Sound profile was null in button " + name);
                 return;
@@ -55,15 +53,15 @@ namespace HUX.Buttons
             switch (newState)
             {
                 case Button.ButtonStateEnum.Observation:
-                    PlayClip(SoundProfile.ButtonObservation, SoundProfile.ButtonObservationVolume);
+                    PlayClip(Profile.ButtonObservation, Profile.ButtonObservationVolume);
                     break;
 
                 case Button.ButtonStateEnum.ObservationTargeted:
-                    PlayClip(SoundProfile.ButtonObservationTargeted, SoundProfile.ButtonObservationTargetedVolume);
+                    PlayClip(Profile.ButtonObservationTargeted, Profile.ButtonObservationTargetedVolume);
                     break;
 
                 case Button.ButtonStateEnum.Targeted:
-                    PlayClip(SoundProfile.ButtonTargeted, SoundProfile.ButtonTargetedVolume);
+                    PlayClip(Profile.ButtonTargeted, Profile.ButtonTargetedVolume);
                     break;
 
                 default:
@@ -73,22 +71,22 @@ namespace HUX.Buttons
 
         void OnButtonCancelled(GameObject go)
         {
-            PlayClip(SoundProfile.ButtonCancelled, SoundProfile.ButtonCancelledVolume);
+            PlayClip(Profile.ButtonCancelled, Profile.ButtonCancelledVolume);
         }
 
         void OnButtonHeld(GameObject go)
         {
-            PlayClip(SoundProfile.ButtonHeld, SoundProfile.ButtonHeldVolume);
+            PlayClip(Profile.ButtonHeld, Profile.ButtonHeldVolume);
         }
 
         void OnButtonPressed(GameObject go)
         {
-            PlayClip(SoundProfile.ButtonPressed, SoundProfile.ButtonPressedVolume);
+            PlayClip(Profile.ButtonPressed, Profile.ButtonPressedVolume);
         }
 
         void OnButtonReleased (GameObject go)
         {
-            PlayClip(SoundProfile.ButtonReleased, SoundProfile.ButtonReleasedVolume);
+            PlayClip(Profile.ButtonReleased, Profile.ButtonReleasedVolume);
         }
 
         void PlayClip (AudioClip clip, float volume)

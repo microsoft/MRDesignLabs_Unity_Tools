@@ -113,7 +113,7 @@ namespace HUX
             profileEditor.OnInspectorGUI();
         }
 
-        public static T DropDownComponentField<T>(string label, T obj, Transform transform) where T : UnityEngine.Component
+        public static T DropDownComponentField<T>(string label, T obj, Transform transform, bool showComponentName = false) where T : UnityEngine.Component
         {
             T[] optionObjects = transform.GetComponentsInChildren<T>(true);
             int selectedIndex = 0;
@@ -121,7 +121,11 @@ namespace HUX
             options[0] = "(None)";
             for (int i = 0; i < optionObjects.Length; i++)
             {
-                options[i + 1] = optionObjects[i].name;
+                if (showComponentName) {
+                    options[i + 1] = optionObjects[i].GetType().Name + " (" + optionObjects[i].name + ")";
+                } else {
+                    options[i + 1] = optionObjects[i].name;
+                }
                 if (obj == optionObjects[i])
                 {
                     selectedIndex = i + 1;

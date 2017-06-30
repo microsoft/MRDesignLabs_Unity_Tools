@@ -394,8 +394,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffc886b5774e0184990bff0ce51eaf92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Profile: {fileID: 0}
   TextMesh: {fileID: 102999891068218110}
-  TextProfile: {fileID: 11400000, guid: 470603dbc72fbc14f8c1b69d314faf75, type: 2}
   OverrideFontStyle: 0
   Style: 0
   OverrideAnchor: 0
@@ -416,7 +416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fff02dbb374b62340a93479237fb9319, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IconProfile: {fileID: 11400000, guid: a05b72560895bf146a8fcc7cdc391aae, type: 2}
+  Profile: {fileID: 11400000, guid: a9c1795616f7f6d4a9e866e757eb2b46, type: 2}
   DisableIcon: 0
   OverrideIcon: 0
   iconOverride: {fileID: 0}
@@ -434,7 +434,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86772d5ca853e924ba484bc960537c04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MeshProfile: {fileID: 11400000, guid: c7079c29554cb374294a5e28695efa0b, type: 2}
+  Profile: {fileID: 11400000, guid: a96c7e832944c124cb072aefca636aab, type: 2}
   TargetTransform: {fileID: 0}
   Renderer: {fileID: 23304077078897404}
   MeshFilter: {fileID: 33642101824296140}
@@ -449,5 +449,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7f67074a40850544a196681fad1325f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SoundProfile: {fileID: 11400000, guid: f9af5d824507da24b8bbd97f4948aec7, type: 2}
+  Profile: {fileID: 11400000, guid: f9af5d824507da24b8bbd97f4948aec7, type: 2}
   audioSource: {fileID: 0}

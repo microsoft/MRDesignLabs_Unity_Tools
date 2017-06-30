@@ -7,12 +7,10 @@ using UnityEngine;
 namespace HUX.Buttons
 {
     [RequireComponent(typeof(CompoundButton))]
-    public class CompoundButtonText : MonoBehaviour
+    public class CompoundButtonText : ProfileButtonBase<ButtonTextProfile>
     {
         public TextMesh TextMesh;
-
-        public ButtonTextProfile TextProfile;
-
+        
         /// <summary>
         /// Turn off text entirely
         /// </summary>
@@ -119,22 +117,22 @@ namespace HUX.Buttons
             else
             {
                 // Update text based on profile
-                if (TextProfile != null)
+                if (Profile != null)
                 {
-                    TextMesh.font = TextProfile.Font;
-                    TextMesh.fontStyle = TextProfile.Style;
-                    TextMesh.fontSize = OverrideSize ? Size : TextProfile.Size;
-                    TextMesh.fontStyle = OverrideFontStyle ? Style : TextProfile.Style;
-                    TextMesh.anchor = OverrideAnchor ? Anchor : TextProfile.Anchor;
-                    TextMesh.alignment = TextProfile.Alignment;
-                    Color c = TextProfile.Color;
+                    TextMesh.font = Profile.Font;
+                    TextMesh.fontStyle = Profile.Style;
+                    TextMesh.fontSize = OverrideSize ? Size : Profile.Size;
+                    TextMesh.fontStyle = OverrideFontStyle ? Style : Profile.Style;
+                    TextMesh.anchor = OverrideAnchor ? Anchor : Profile.Anchor;
+                    TextMesh.alignment = Profile.Alignment;
+                    Color c = Profile.Color;
                     c.a = alpha;
                     TextMesh.color = c;
 
                     // Apply offset
                     if (!OverrideOffset)
                     {
-                        TextMesh.transform.localPosition = TextProfile.GetOffset(TextMesh.anchor);
+                        TextMesh.transform.localPosition = Profile.GetOffset(TextMesh.anchor);
                     }
 
                     TextMesh.gameObject.SetActive(true);

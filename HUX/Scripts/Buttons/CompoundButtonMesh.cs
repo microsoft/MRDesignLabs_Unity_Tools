@@ -11,11 +11,9 @@ namespace HUX.Buttons
     /// Mesh button is a mesh renderer interactible with state data for button state
     /// </summary>
     [RequireComponent(typeof(CompoundButton))]
-    public class CompoundButtonMesh : MonoBehaviour
+    public class CompoundButtonMesh : ProfileButtonBase<ButtonMeshProfile>
     {
         const float AnimationSpeedMultiplier = 25f;
-
-        public ButtonMeshProfile MeshProfile;
 
         /// <summary>
         /// Transform that scale and offset will be applied to.
@@ -106,7 +104,7 @@ namespace HUX.Buttons
                 return;
             }       
 
-            if (MeshProfile == null)
+            if (Profile == null)
             {
                 Debug.LogError("No profile selected for CompoundButtonMesh in " + name);
                 enabled = false;
@@ -115,9 +113,9 @@ namespace HUX.Buttons
 
             b.StateChange += StateChange;
             // Disable this script if we're not using smooth changes
-            enabled = MeshProfile.SmoothStateChanges;
+            enabled = Profile.SmoothStateChanges;
             // Set the current datum so our first state is activated
-            currentDatum = MeshProfile.ButtonStates[(int)Button.ButtonStateEnum.Observation];
+            currentDatum = Profile.ButtonStates[(int)Button.ButtonStateEnum.Observation];
             UpdateButtonProperties(false);
         }
 
@@ -131,10 +129,10 @@ namespace HUX.Buttons
                 lastTimePressed = Time.time;
             }
 
-            currentDatum = MeshProfile.ButtonStates[(int)newState];
+            currentDatum = Profile.ButtonStates[(int)newState];
                         
             // If we're not using smooth states, just set them now
-            if (!MeshProfile.SmoothStateChanges)
+            if (!Profile.SmoothStateChanges)
             {
                 TargetTransform.localScale = currentDatum.Scale;
                 TargetTransform.localPosition = currentDatum.Offset;
@@ -148,13 +146,13 @@ namespace HUX.Buttons
                         Renderer.sharedMaterial = instantiatedMaterial;
                     }
 
-                    if (!string.IsNullOrEmpty(MeshProfile.ColorPropertyName))
+                    if (!string.IsNullOrEmpty(Profile.ColorPropertyName))
                     {
-                        Renderer.sharedMaterial.SetColor(MeshProfile.ColorPropertyName, currentDatum.StateColor);
+                        Renderer.sharedMaterial.SetColor(Profile.ColorPropertyName, currentDatum.StateColor);
                     }
-                    if (!string.IsNullOrEmpty(MeshProfile.ValuePropertyName))
+                    if (!string.IsNullOrEmpty(Profile.ValuePropertyName))
                     {
-                        Renderer.sharedMaterial.SetFloat(MeshProfile.ValuePropertyName, currentDatum.StateValue);
+                        Renderer.sharedMaterial.SetFloat(Profile.ValuePropertyName, currentDatum.StateValue);
                     }
                 }
             }
@@ -164,6 +162,13 @@ namespace HUX.Buttons
         {
             StateChange(Button.ButtonStateEnum.Disabled);
             UpdateButtonProperties(false);
+        }
+
+        protected void OnEnable() {
+            Button b = GetComponent<Button>();
+            if (b != null) {
+                StateChange(b.ButtonState);
+            }
         }
 
         protected void Update ()
@@ -179,9 +184,9 @@ namespace HUX.Buttons
             MeshButtonDatum datum = currentDatum;
 
             // If we're using sticky events, and we're still not past the 'sticky' pressed time, use that datum
-            if (MeshProfile.StickyPressedEvents && Time.time < lastTimePressed + MeshProfile.StickyPressedTime)
+            if (Profile.StickyPressedEvents && Time.time < lastTimePressed + Profile.StickyPressedTime)
             {
-                datum = MeshProfile.ButtonStates[(int)Button.ButtonStateEnum.Pressed];
+                datum = Profile.ButtonStates[(int)Button.ButtonStateEnum.Pressed];
             }
 
             if (TargetTransform != null)
@@ -190,10 +195,10 @@ namespace HUX.Buttons
                 {
                     TargetTransform.localScale = Vector3.Lerp(
                         TargetTransform.localScale, datum.Scale,
-                        Time.deltaTime * MeshProfile.AnimationSpeed * AnimationSpeedMultiplier);
+                        Time.deltaTime * Profile.AnimationSpeed * AnimationSpeedMultiplier);
                     TargetTransform.localPosition = Vector3.Lerp(
                         TargetTransform.localPosition, datum.Offset,
-                        Time.deltaTime * MeshProfile.AnimationSpeed * AnimationSpeedMultiplier);
+                        Time.deltaTime * Profile.AnimationSpeed * AnimationSpeedMultiplier);
                 } else
                 {
                     TargetTransform.localScale = datum.Scale;
@@ -211,34 +216,34 @@ namespace HUX.Buttons
                     Renderer.sharedMaterial = instantiatedMaterial;
                 }
 
-                if (!string.IsNullOrEmpty(MeshProfile.ColorPropertyName))
+                if (!string.IsNullOrEmpty(Profile.ColorPropertyName))
                 {
                     if (smooth)
                     {
                         Renderer.sharedMaterial.SetColor(
-                            MeshProfile.ColorPropertyName,
-                            Color.Lerp(Renderer.material.GetColor(MeshProfile.ColorPropertyName),
+                            Profile.ColorPropertyName,
+                            Color.Lerp(Renderer.material.GetColor(Profile.ColorPropertyName),
                             datum.StateColor,
-                            Time.deltaTime * MeshProfile.AnimationSpeed * AnimationSpeedMultiplier));
+                            Time.deltaTime * Profile.AnimationSpeed * AnimationSpeedMultiplier));
                     } else
                     {
                         Renderer.sharedMaterial.SetColor(
-                            MeshProfile.ColorPropertyName,
+                            Profile.ColorPropertyName,
                             datum.StateColor);
                     }
                 }
-                if (!string.IsNullOrEmpty(MeshProfile.ValuePropertyName))
+                if (!string.IsNullOrEmpty(Profile.ValuePropertyName))
                 {
                     if (smooth)
                     {
                         Renderer.sharedMaterial.SetFloat(
-                            MeshProfile.ValuePropertyName,
-                            Mathf.Lerp(Renderer.material.GetFloat(MeshProfile.ValuePropertyName),
+                            Profile.ValuePropertyName,
+                            Mathf.Lerp(Renderer.material.GetFloat(Profile.ValuePropertyName),
                             datum.StateValue,
-                            Time.deltaTime * MeshProfile.AnimationSpeed * AnimationSpeedMultiplier));
+                            Time.deltaTime * Profile.AnimationSpeed * AnimationSpeedMultiplier));
                     } else
                     {
-                        Renderer.sharedMaterial.SetFloat(MeshProfile.ValuePropertyName, datum.StateValue);
+                        Renderer.sharedMaterial.SetFloat(Profile.ValuePropertyName, datum.StateValue);
                     }
                 }
             }

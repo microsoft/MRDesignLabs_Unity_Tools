@@ -29,9 +29,9 @@ namespace HUX
                 return;
             }
 
-            textButton.TextProfile = HUXEditorUtils.DrawProfileField<ButtonTextProfile>(textButton.TextProfile);
+            textButton.Profile = HUXEditorUtils.DrawProfileField<ButtonTextProfile>(textButton.Profile);
             
-            if (textButton.TextProfile == null)
+            if (textButton.Profile == null)
             {
                 HUXEditorUtils.SaveChanges(target);
                 return;
@@ -90,7 +90,7 @@ namespace HUX
             HUXEditorUtils.EndSectionBox();
             //textButton.Alpha = EditorGUILayout.Slider("Text transparency", textButton.Alpha, 0f, 1f);
 
-            HUXEditorUtils.DrawProfileInspector(textButton.TextProfile, textButton);
+            HUXEditorUtils.DrawProfileInspector(textButton.Profile, textButton);
 
             HUXEditorUtils.SaveChanges(target);
         }

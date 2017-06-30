@@ -63,6 +63,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &3381464
 MeshFilter:
@@ -111,37 +112,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86772d5ca853e924ba484bc960537c04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FilterTag:
-    Tag: Default
-  ButtonState: 4
-  RequireGaze: 1
-  UseAnimator: 1
-  ButtonStates:
-  - Name: Pressed
-    ActiveState: 0
-    StateColor: {r: 1, g: 0.41176468, b: 0.41176468, a: 0}
-    Offset: {x: 0, y: 0, z: 0}
-    Scale: {x: 1, y: 1, z: 1}
-  - Name: Targeted
-    ActiveState: 1
-    StateColor: {r: 0.7647059, g: 0.65224916, b: 0.48356402, a: 0}
-    Offset: {x: 0, y: 0, z: 0}
-    Scale: {x: 1, y: 1, z: 1}
-  - Name: Interactive
-    ActiveState: 2
-    StateColor: {r: 0.7837728, g: 1, b: 0.6985294, a: 0}
-    Offset: {x: 0, y: 0, z: 0}
-    Scale: {x: 1, y: 1, z: 1}
-  - Name: ObservationTargeted
-    ActiveState: 3
-    StateColor: {r: 0.08823532, g: 0.4340771, b: 1, a: 0}
-    Offset: {x: 0, y: 0, z: 0}
-    Scale: {x: 1, y: 1, z: 1}
-  - Name: Observation
-    ActiveState: 4
-    StateColor: {r: 0.50735295, g: 0.695028, b: 1, a: 0}
-    Offset: {x: 0, y: 0, z: 0}
-    Scale: {x: 1, y: 1, z: 1}
+  Profile: {fileID: 11400000, guid: a96c7e832944c124cb072aefca636aab, type: 2}
+  TargetTransform: {fileID: 0}
+  Renderer: {fileID: 0}
+  MeshFilter: {fileID: 0}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

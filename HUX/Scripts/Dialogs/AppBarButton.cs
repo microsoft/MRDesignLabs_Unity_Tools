@@ -35,7 +35,7 @@ namespace HUX.Interaction
             icon = GetComponent<CompoundButtonIcon>();
             if (customIconProfile != null)
             {
-                icon.IconProfile = customIconProfile;
+                icon.Profile = customIconProfile;
                 icon.IconName = string.Empty;
             }
             icon.IconName = template.Icon;

@@ -73,7 +73,7 @@ namespace HUX
             // Get the profile we'll be using for our icons
             ButtonIconProfile profile = appBar.CustomButtonIconProfile;
             if (profile == null) {
-                profile = icon.IconProfile;
+                profile = icon.Profile;
                 if (profile == null) {
                     HUXEditorUtils.ErrorMessage("The button prefab does not specify an icon profile. Can't continue.");
                     HUXEditorUtils.EndSectionBox();

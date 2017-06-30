@@ -22,9 +22,9 @@ namespace HUX
                 return;
             }
             
-            iconButton.IconProfile = HUXEditorUtils.DrawProfileField<ButtonIconProfile>(iconButton.IconProfile);
+            iconButton.Profile = HUXEditorUtils.DrawProfileField<ButtonIconProfile>(iconButton.Profile);
             
-            if (iconButton.IconProfile == null)
+            if (iconButton.Profile == null)
             {
                 HUXEditorUtils.SaveChanges(target);
                 return;
@@ -41,7 +41,7 @@ namespace HUX
                 return;
             }
 
-            if (iconButton.IconProfile.IconMaterial == null)
+            if (iconButton.Profile.IconMaterial == null)
             {
                 HUXEditorUtils.ErrorMessage("You must specify an icon material in the profile", null);
                 HUXEditorUtils.EndSectionBox();
@@ -49,7 +49,7 @@ namespace HUX
                 return;
             }
 
-            if (iconButton.IconProfile.IconMesh == null)
+            if (iconButton.Profile.IconMesh == null)
             {
                 HUXEditorUtils.ErrorMessage("You must specify an icon mesh in the profile", null);
                 HUXEditorUtils.EndSectionBox();
@@ -60,11 +60,11 @@ namespace HUX
             // Icon profiles provide their own fields for the icon name
             iconButton.Alpha = EditorGUILayout.Slider("Icon transparency", iconButton.Alpha, 0f, 1f);
 
-            iconButton.IconName = iconButton.IconProfile.DrawIconSelectField(iconButton.IconName);
+            iconButton.IconName = iconButton.Profile.DrawIconSelectField(iconButton.IconName);
 
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.DrawProfileInspector(iconButton.IconProfile, iconButton);
+            HUXEditorUtils.DrawProfileInspector(iconButton.Profile, iconButton);
 
             // Check to see if the icon is valid - if it's not, show the placeholder
             /*Texture2D icon = iconButton.IconRenderer.sharedMaterial.mainTexture as Texture2D;
@@ -76,13 +76,13 @@ namespace HUX
                     ClickToOpen);
             }*/
 
-            HUXEditorUtils.SaveChanges(iconButton, iconButton.IconProfile);
+            HUXEditorUtils.SaveChanges(iconButton, iconButton.Profile);
         }
 
         void ClickToOpen()
         {
             CompoundButtonIcon iconButton = (CompoundButtonIcon)target;
-            UnityEditor.Selection.activeObject = iconButton.IconProfile;
+            UnityEditor.Selection.activeObject = iconButton.Profile;
         }
     }
 }

@@ -60,7 +60,7 @@ namespace HUX
             ButtonIconProfile profile = null;
             if (icon != null)
             {
-                profile = icon.IconProfile;
+                profile = icon.Profile;
             }
 
             HUXEditorUtils.BeginSubSectionBox("Buttons");

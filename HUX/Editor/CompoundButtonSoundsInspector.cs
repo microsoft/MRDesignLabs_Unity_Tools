@@ -16,17 +16,17 @@ namespace HUX
             CompoundButtonSounds soundButton = (CompoundButtonSounds)target;
 
             GUI.color = Color.white;
-            soundButton.SoundProfile = HUXEditorUtils.DrawProfileField<ButtonSoundProfile>(soundButton.SoundProfile);
+            soundButton.Profile = HUXEditorUtils.DrawProfileField<ButtonSoundProfile>(soundButton.Profile);
 
-            if (soundButton.SoundProfile == null)
+            if (soundButton.Profile == null)
             {
                 HUXEditorUtils.SaveChanges(target);
                 return;
             }
 
-            HUXEditorUtils.DrawProfileInspector(soundButton.SoundProfile, soundButton);
+            HUXEditorUtils.DrawProfileInspector(soundButton.Profile, soundButton);
 
-            HUXEditorUtils.SaveChanges(target, soundButton.SoundProfile);
+            HUXEditorUtils.SaveChanges(target, soundButton.Profile);
         }
     }
 }
