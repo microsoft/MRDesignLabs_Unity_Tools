@@ -12,6 +12,12 @@ public class StartupChecksWindow : EditorWindow {
 
     void OnGUI ()
     {
+        if (StartupChecks.FoundRequiredFonts && StartupChecks.FoundRequiredAxis)
+        {
+            HUXEditorUtils.Header("Everything found!");
+            return;
+        }
+
         if (!StartupChecks.FoundRequiredFonts) {
             HUXEditorUtils.Header("Fonts Missing");
             HUXEditorUtils.WarningMessage("Fonts are missing from this project");

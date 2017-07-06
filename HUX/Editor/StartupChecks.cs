@@ -42,6 +42,11 @@ public class StartupChecks
         lastCheck = -checkInterval;
     }
 
+    public static void ForceCheck()
+    {
+        DoCheck();
+    }
+
     static void Update()
     {
         if (shownOnceThisSession)
@@ -56,6 +61,12 @@ public class StartupChecks
         if (Application.isPlaying)
             return;
 
+        DoCheck();
+
+    }
+
+    static void DoCheck()
+    {
         lastCheck = Time.realtimeSinceStartup;
         FoundRequiredFonts = false;
 
@@ -68,16 +79,16 @@ public class StartupChecks
                 break;
             }
         }*/
-        
+
         foreach (string guid in AssetDatabase.FindAssets("t:font", new string[] { "Assets" }))
         {
             string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-            Font font = (Font)AssetDatabase.LoadAssetAtPath(assetPath, typeof (Font));
+            Font font = (Font)AssetDatabase.LoadAssetAtPath(assetPath, typeof(Font));
             if (font != null)
             {
                 foreach (string fontName in font.fontNames)
                 {
-                    if (fontName.Equals (HUX.Buttons.ButtonIconProfileFont.DefaultUnicodeFont))
+                    if (fontName.Equals(HUX.Buttons.ButtonIconProfileFont.DefaultUnicodeFont))
                     {
                         FoundRequiredFonts = true;
                         break;
@@ -88,6 +99,8 @@ public class StartupChecks
             if (FoundRequiredFonts)
                 break;
         }
+
+        FoundRequiredAxis = false;
 
         MissingAxis = new HashSet<string> {
             InputSourceUnityGamepad.AxisDpadH,
@@ -110,17 +123,22 @@ public class StartupChecks
         SerializedObject obj = new SerializedObject(inputManager);
         SerializedProperty axisArray = obj.FindProperty("m_Axes");
 
-        for (int i = 0; i < axisArray.arraySize; ++i) {
+        for (int i = 0; i < axisArray.arraySize; ++i)
+        {
             var axis = axisArray.GetArrayElementAtIndex(i);
             var name = axis.FindPropertyRelative("m_Name").stringValue;
             MissingAxis.Remove(name);
         }
 
-        if (MissingAxis.Count == 0) {
-            FoundRequiredFonts = true;
-        } else {
-            FoundRequiredFonts = false;
-            foreach (string axisName in MissingAxis) {
+        if (MissingAxis.Count == 0)
+        {
+            FoundRequiredAxis = true;
+        }
+        else
+        {
+            FoundRequiredAxis = false;
+            foreach (string axisName in MissingAxis)
+            {
                 Debug.LogWarning("Didn't find axis " + axisName + " in Input Manager. Some HUX features will not work without these axis.");
             }
         }
@@ -131,5 +149,6 @@ public class StartupChecks
             EditorWindow window = EditorWindow.GetWindow<StartupChecksWindow>(false, "Startup Check", true);
             window.minSize = new Vector2(425, 450);
         }
+
     }
 }

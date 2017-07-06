@@ -350,6 +350,13 @@ namespace HUX
             }
         }
 
+        public static void Header(string header)
+        {
+            GUIStyle headerStyle = new GUIStyle(EditorStyles.boldLabel);
+            headerStyle.fontSize = 18;
+            EditorGUILayout.LabelField(header, headerStyle, GUILayout.MinHeight(24));
+        }
+
         public static void WarningMessage(string warning, string buttonMessage = null, Action buttonAction = null)
         {
             Color tColor = GUI.color;

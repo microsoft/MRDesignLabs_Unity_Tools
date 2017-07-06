@@ -85,6 +85,14 @@ public class HUXEditorMenu : MonoBehaviour
         HUX.Utility.Sequencer _sequencer = _gameObject.AddComponent<HUX.Utility.Sequencer>();
         _sequencer.MessageBoxPrefab = AssetDatabase.LoadAssetAtPath<HUX.Dialogs.MessageBox>(MessageBoxPath);
     }
+
+    [MenuItem("HUX/Startup Check")]
+    public static void StartupCheck()
+    {
+        StartupChecks.ForceCheck();
+        EditorWindow window = EditorWindow.GetWindow<StartupChecksWindow>(false, "Startup Check", true);
+        window.minSize = new Vector2(425, 450);
+    }
     #endregion
 
     #region Buttons
