@@ -16,7 +16,7 @@ namespace HUX.Cursors
                 return base.ShouldBeActive();
             }
 
-            ContextMenu i = _curTarget.GetComponent<ContextMenu>();
+            ContextCursorMenu i = _curTarget.GetComponent<ContextCursorMenu>();
             return i != null && i.Visible;
         }
     }

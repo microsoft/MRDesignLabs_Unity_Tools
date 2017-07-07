@@ -235,7 +235,7 @@ namespace HUX.Cursors
     //        GameObject target = this._curTarget ?? this._lastTarget;
     //        if (target != null)
     //        {
-    //            ContextMenu context = target.GetComponent<ContextMenu>();
+    //            ContextCursorMenu context = target.GetComponent<ContextCursorMenu>();
     //            if (context != null)
     //            {
     //                context.Visible = show;

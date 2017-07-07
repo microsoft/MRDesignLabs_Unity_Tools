@@ -4,7 +4,10 @@
 //
 using UnityEngine;
 
-public class ContextMenu : MonoBehaviour
+namespace HUX.Cursors
 {
-    public bool Visible = false;
+    public class ContextCursorMenu : MonoBehaviour
+    {
+        public bool Visible = false;
+    }
 }
