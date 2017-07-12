@@ -276,7 +276,7 @@ namespace HUX
 
             Gizmos.matrix = this.transform.localToWorldMatrix;
             Gizmos.color = Color.green;
-            Gizmos.DrawFrustum(Vector3.zero, m_deviceFOV, 0.1f, 5f, (16.0f / 9.0f));
+            Gizmos.DrawFrustum(Vector3.zero, m_deviceFOV, 5f, 0.1f, (16.0f / 9.0f));
         }
 
         /// <summary>
