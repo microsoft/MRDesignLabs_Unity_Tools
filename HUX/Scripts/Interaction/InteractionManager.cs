@@ -85,9 +85,22 @@ namespace HUX.Interaction
 		public static event Action<GameObject, InteractionEventArgs> OnPressed;
 		public static event Action<GameObject, InteractionEventArgs> OnReleased;
 
-		protected GameObject _lockedFocusGO;
-
+		/// <summary>
+		/// If true, lock focus on the interactible object when an interaction begins,
+		/// so that when looking away from it, the interaction events continue to fire
+		/// </summary>
 		public bool bLockFocus;
+
+		/// <summary>
+		/// The max duration of time that can pass after a tap to consider the next tap
+		/// part of the multi-tap (as in, double tap etc)
+		/// </summary>
+		public float MultiTapWindow = 0.75f;
+
+		/// <summary>
+		/// The time that the last hold was released
+		/// </summary>
+		float lastHoldReleaseTime;
 
 		// This should be Start instead of Awake right?
 		protected void Start()
@@ -133,6 +146,33 @@ namespace HUX.Interaction
 			OnReleasedEvent(focuser);
 		}
 
+		void Update()
+		{
+			// Simulate manipulation events when on a platform that doesn't have GestureRecognizer.
+			// TODO: Simulate navigation events?
+			// Only do manipulation event simulation in editor, and should we do it on PC?
+			if (Application.platform == RuntimePlatform.WindowsEditor /*|| Application.platform == RuntimePlatform.WindowsPlayer*/)
+			{
+				AFocuser focuser = GetFocuserForSource(InteractionSourceKind.Hand);
+
+				// Use the head's position + forward, since the focuser ray might point to the locked focus
+				Vector3 newPos = Veil.Instance.HeadTransform.position + Veil.Instance.HeadTransform.forward;
+
+				if (InputShell.Instance.SelectButton.PressedOnce)
+				{
+					ManipulationStartedEvent(focuser, newPos, focuser.FocusRay);
+				}
+				else if (InputShell.Instance.SelectButton.pressed)
+				{
+					ManipulationUpdatedEvent(focuser, newPos, focuser.FocusRay);
+				}
+				else if (InputShell.Instance.SelectButton.ReleasedOnce)
+				{
+					ManipulationCompletedEvent(focuser, newPos, focuser.FocusRay);
+				}
+			}
+		}
+
 		void SetupEvents(bool add)
         {
             if (add)
@@ -160,7 +200,7 @@ namespace HUX.Interaction
             {
                 if (newState)
                 {
-                    if (inputSource != InputSources.Instance.hands) // && inputSource != InputSources.Instance.fawkes)
+                    if (inputSource != InputSources.Instance.hands)
                     {
 						OnPressedEvent(focuser);
 
@@ -170,15 +210,23 @@ namespace HUX.Interaction
                 }
                 else
                 {
-                    if (inputSource != InputSources.Instance.hands) // && inputSource != InputSources.Instance.fawkes)
+                    if (inputSource != InputSources.Instance.hands)
                     {
 						OnReleasedEvent(focuser);
 
 						// Only fire this if HoldStarted was fired
 						HoldCompletedEvent(focuser, focuser.FocusRay);
 
+						// Send double tap (should be multi-tap someday)
+						if (Time.time - lastHoldReleaseTime <= MultiTapWindow)
+						{
+							DoubleTappedEvent(focuser, focuser.FocusRay);
+						}
+						
 						// Need to only fire this if hold wasn't started?
 						TappedEvent(focuser, focuser.FocusRay);
+
+						lastHoldReleaseTime = Time.time;
 					}
                 }
             }

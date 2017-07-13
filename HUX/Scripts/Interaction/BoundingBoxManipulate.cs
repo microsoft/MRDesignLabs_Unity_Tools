@@ -320,7 +320,6 @@ namespace HUX.Interaction
             if (!manipulatingNow)
                 return;
 
-
             Vector3 eventPos = eventArgs.Position;
             // Transform the direction if necessary
             if (eventArgs.IsPosRelative)
@@ -358,11 +357,16 @@ namespace HUX.Interaction
             if (!Application.isPlaying)
                 return;
 
-            // Check to see if our hands have exited the screen
-            // If they have, stop manipulating
-            if (!Veil.Instance.HandVisible) {
-                ManipulatingNow = false;
-            }
+			// Don't do the hands check if this is editor mode
+			if (Application.platform == RuntimePlatform.WindowsEditor)
+			{
+				// Check to see if our hands have exited the screen
+				// If they have, stop manipulating
+				if (!Veil.Instance.HandVisible)
+				{
+					ManipulatingNow = false;
+				}
+			}
 
             UpdateUserManipulation();
             UpdateTargetManipulation();
