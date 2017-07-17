@@ -15,6 +15,32 @@ namespace HUX.Interaction
     public class BoundingBoxGizmoShell : BoundingBoxGizmo
     {
         #region public
+
+        /// <summary>
+        /// If true, bounding box edges will display when active
+        /// To more closely mimic shell behavior, set this to false
+        /// </summary>
+        public bool DisplayEdgesWhenSelected = true;
+
+        /// <summary>
+        /// Whether to clamp handle size between HandleScaleMin / Max
+        /// This may result in bunched-up handles so use with caution
+        /// </summary>
+        public bool ClampHandleScale = false;
+
+        /// <summary>
+        /// User-defined min size for handle
+        /// Useful when using the bounding box with extremely small objects
+        /// This value is ignored if ClampHandleSize is false
+        /// </summary>
+        public float HandleScaleMin = 0.1f;
+
+        /// <summary>
+        /// User-defined min size for handle
+        /// Useful when using the bounding box with extremely large objects
+        /// This value is ignored if ClampHandleSize is false
+        /// </summary>
+        public float HandleScaleMax = 2.0f;
         
         /// <summary>
         /// Mesh used to draw scale handles
@@ -116,10 +142,14 @@ namespace HUX.Interaction
             // Rotation is just the rotation of our gizmo
             Vector3 pos = Vector3.zero;
             Quaternion rotation = transform.rotation;
-            Vector3 scale = Vector3.one * Mathf.Min(Mathf.Min(localBounds.size.x, localBounds.size.y), localBounds.size.z);
+            float smallestDimension = Mathf.Min(Mathf.Min(localBounds.size.x, localBounds.size.y), localBounds.size.z);
+            if (ClampHandleScale)
+            {
+                smallestDimension = Mathf.Clamp(smallestDimension, HandleScaleMin, HandleScaleMax);
+            }
+            Vector3 scale = Vector3.one * smallestDimension;
 
-
-            // Get the index of our active handle so we can draw it with a different material
+           // Get the index of our active handle so we can draw it with a different material
             activeHandleIndex = -1;
             BoundingBoxManipulate manipulate = boundingBox.GetComponent<BoundingBoxManipulate>();
             if (manipulate.ActiveHandle != null && manipulate.ActiveHandle.HandleType != BoundingBoxHandle.HandleTypeEnum.Drag)
@@ -130,7 +160,7 @@ namespace HUX.Interaction
             // If we're not accepting input, just draw the box bounds
             if (!manipulate.AcceptInput)
             {
-                edgeRenderer.enabled = true;
+                edgeRenderer.enabled = DisplayEdgesWhenSelected;
                 edgeMaterial.SetColor("_EmissionColor", InactiveColor);
             }
             else
