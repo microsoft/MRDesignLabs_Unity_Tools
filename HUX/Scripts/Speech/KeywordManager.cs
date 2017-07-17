@@ -253,8 +253,8 @@ namespace HUX.Speech
                     return;
                 }
 
-#if UNITY_WSA || UNITY_STANDALONE_WIN
                 try {
+#if UNITY_WSA || UNITY_STANDALONE_WIN
                     m_Recognizer = new KeywordRecognizer(new string[] { keyword });
                     m_Recognizer.OnPhraseRecognized += OnPhraseRecognized;
 
