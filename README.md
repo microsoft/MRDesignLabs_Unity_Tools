@@ -10,7 +10,7 @@ To do this simple navigate to your Assets folder in your project and use:
 This will create the submodule for Mixed Reality Design Labs Unity tools and allow you to stay up to date with changes to the base toolset or decide not to integrate newer changes.
 
 # Upgrading the Submodule
-To upgrade the submodule you'll want to do the following to sync to head and check out:
+To upgrade the submodule you'll want to do the following to sync to head, pull and commit:
  * git submodule foreach git checkout HEAD
  * git submodule foreach git pull
  * git add .
