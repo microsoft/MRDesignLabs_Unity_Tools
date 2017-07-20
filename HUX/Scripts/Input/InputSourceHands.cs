@@ -412,9 +412,10 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
             Vector3 newPosition;
             if (state.properties.location.TryGetPosition(out newPosition)) {
                 CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
-
-                UpdateFromWSASource(inputState, state);
-                SourceUpdate(inputState, newPosition);
+				if (inputState != null) {
+					UpdateFromWSASource(inputState, state);
+					SourceUpdate(inputState, newPosition);
+				}
             }
         }
     }
@@ -423,8 +424,10 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         if (state.source.kind == InteractionSourceKind.Hand) {
             CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
 
-            UpdateFromWSASource(inputState, state);
-            SourceLost(inputState);
+			if (inputState != null) {
+				UpdateFromWSASource(inputState, state);
+				SourceLost(inputState);
+			}
         }
     }
 
