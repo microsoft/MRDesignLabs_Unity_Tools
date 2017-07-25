@@ -37,6 +37,11 @@ namespace HUX.Buttons
         /// </summary>
         public KeywordConfidenceLevel ConfidenceLevel = KeywordConfidenceLevel.Unknown;
 
+        /// <summary>
+        /// Variable to keep track of previous button text incase the button text changes after registration.
+        /// </summary>
+        private string prevButtonText;
+
         public void Start ()
         {
             // Disable if no microphone devices are found
@@ -55,7 +60,7 @@ namespace HUX.Buttons
                 case KeywordSourceEnum.ButtonText:
                 default:
                     CompoundButtonText text = GetComponent<CompoundButtonText>();
-                    keyWord = text.Text;
+                    keyWord = prevButtonText = text.Text;
                     break;
 
                 case KeywordSourceEnum.LocalOverride:
@@ -64,6 +69,19 @@ namespace HUX.Buttons
             }
 
             KeywordManager.Instance.AddKeyword(keyWord, new KeywordManager.KeywordRecognizedDelegate(KeywordHandler), ConfidenceLevel);
+        }
+
+        public void Update()
+        {
+            // Check if Button text has changed. If so, remove previous keyword and add new button text
+            if (KeywordSource == KeywordSourceEnum.ButtonText &&
+                prevButtonText != null &&
+                GetComponent<CompoundButtonText>().Text != prevButtonText)
+            {
+                KeywordManager.Instance.RemoveKeyword(prevButtonText, KeywordHandler);
+                prevButtonText = GetComponent<CompoundButtonText>().Text;
+                KeywordManager.Instance.AddKeyword(prevButtonText, new KeywordManager.KeywordRecognizedDelegate(KeywordHandler), ConfidenceLevel);
+            }
         }
 
         public void KeywordHandler(KeywordRecognizedEventArgs args)
