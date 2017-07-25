@@ -16,7 +16,7 @@ namespace HUX.Interaction
         public FilterTag VisibleFilterTag;
         public FilterTag HiddenFilterTag;
 
-        public void Initialize (AppBar newParentToolBar, AppBar.ButtonTemplate newTemplate, ButtonIconProfile newCustomProfile)
+        public void Initialize(AppBar newParentToolBar, AppBar.ButtonTemplate newTemplate, ButtonIconProfile newCustomProfile)
         {
             // TODO move this into the tag manager
             VisibleFilterTag = new FilterTag();
@@ -41,6 +41,15 @@ namespace HUX.Interaction
             icon.IconName = template.Icon;
             initialized = true;
             Hide();
+
+            if (newTemplate.EventTarget != null)
+            {
+                // Register the button with its target interactable
+                newTemplate.EventTarget.RegisterInteractible(gameObject);
+            } else
+            {
+                Debug.LogError("No target found for button " + newTemplate.Name + " - button will have no effect.");
+            }
         }
 
         protected void OnEnable ()
