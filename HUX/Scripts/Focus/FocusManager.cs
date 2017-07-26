@@ -206,7 +206,7 @@ namespace HUX.Focus
 		public bool ContainsValidFilter(Transform transform)
 		{
 			InteractibleObject interactibleObject = transform.GetComponent<InteractibleObject>();
-			if (interactibleObject != null)
+			if (interactibleObject != null && interactibleObject.FilterTag != null)
 			{
 				return FilterTags.ValidTags.Contains(interactibleObject.FilterTag.Tag);
 			}
