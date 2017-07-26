@@ -27,8 +27,7 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         Left,
         Neither,
     }
-
-
+    
     public int NumHandsVisible { get; private set; }
     public int NumFingersPressed { get; private set; }
     public int PrevFingersPressed { get; private set; }
@@ -395,54 +394,52 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
     }
 
 #if UNITY_WSA
-    public void WSASourceEntered(InteractionSourceState state) {
+    public void WSASourceEntered(InteractionManager.SourceEventArgs args) {
         // Track Hands
-        if (state.source.kind == InteractionSourceKind.Hand) {
+        if (args.state.source.sourceKind == InteractionSourceKind.Hand) {
             CurrentHandState inputState = new CurrentHandState();
 
-            state.properties.location.TryGetPosition(out inputState.Position);
+            args.state.sourcePose.TryGetPosition(out inputState.Position);
 
-            UpdateFromWSASource(inputState, state);
+            UpdateFromWSASource(inputState, args.state);
             SourceEntered(inputState);
         }
     }
 
-    public void WSASourceUpdate(InteractionSourceState state) {
-        if (state.source.kind == InteractionSourceKind.Hand) {
+    public void WSASourceUpdate(InteractionManager.SourceEventArgs args) {
+        if (args.state.source.sourceKind == InteractionSourceKind.Hand) {
             Vector3 newPosition;
-            if (state.properties.location.TryGetPosition(out newPosition)) {
-                CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
-				if (inputState != null) {
-					UpdateFromWSASource(inputState, state);
-					SourceUpdate(inputState, newPosition);
-				}
+
+            if (args.state.sourcePose.TryGetPosition(out newPosition)) {
+                CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == args.state.source.id); // handID
+
+                UpdateFromWSASource(inputState, args.state);
+                SourceUpdate(inputState, newPosition);
             }
         }
     }
 
-    public void WSASourceLost(InteractionSourceState state) {
-        if (state.source.kind == InteractionSourceKind.Hand) {
-            CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
+    public void WSASourceLost(InteractionManager.SourceEventArgs args) {
+        if (args.state.source.sourceKind == InteractionSourceKind.Hand) {
+            CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == args.state.source.id); // handID
 
-			if (inputState != null) {
-				UpdateFromWSASource(inputState, state);
-				SourceLost(inputState);
-			}
+            UpdateFromWSASource(inputState, args.state);
+            SourceLost(inputState);
         }
     }
 
-    private void WSAFingerReleased(InteractionSourceState state) {
-        CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id);
+    private void WSAFingerReleased(InteractionManager.SourceEventArgs args) {
+        CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == args.state.source.id);
         if (inputState != null) {
-            UpdateFromWSASource(inputState, state);
+            UpdateFromWSASource(inputState, args.state);
             OnFingerReleased(inputState);
         }
     }
 
-    private void WSAFingerPressed(InteractionSourceState state) {
-        CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id);
+    private void WSAFingerPressed(InteractionManager.SourceEventArgs args) {
+        CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == args.state.source.id);
         if (inputState != null) {
-            UpdateFromWSASource(inputState, state);
+            UpdateFromWSASource(inputState, args.state);
             OnFingerPressed(inputState);
         }
     }
@@ -481,7 +478,7 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         currentInputState.HandId = state.source.id;
         currentInputState.LastPressed = currentInputState.Pressed;
         currentInputState.Pressed = state.pressed;
-        state.properties.location.TryGetVelocity(out currentInputState.Velocity);
+        state.sourcePose.TryGetVelocity(out currentInputState.Velocity);
 
         currentInputState.SourceLossRisk = state.properties.sourceLossRisk;
         currentInputState.SourceLossMitigationDirection = state.properties.sourceLossMitigationDirection;

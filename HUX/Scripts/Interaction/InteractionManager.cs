@@ -134,15 +134,15 @@ namespace HUX.Interaction
 			bLockFocus = true;
 		}
 
-		private void InteractionManager_SourcePressedCallback(InteractionSourceState state)
+		private void InteractionManager_SourcePressedCallback(UnityEngine.VR.WSA.Input.InteractionManager.SourceEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+			AFocuser focuser = GetFocuserForSource(args.state.source.sourceKind);
 			OnPressedEvent(focuser);
 		}
 
-		private void InteractionManager_SourceReleasedCallback(InteractionSourceState state)
+		private void InteractionManager_SourceReleasedCallback(UnityEngine.VR.WSA.Input.InteractionManager.SourceEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+			AFocuser focuser = GetFocuserForSource(args.state.source.sourceKind);
 			OnReleasedEvent(focuser);
 		}
 
@@ -847,48 +847,64 @@ namespace HUX.Interaction
         #endregion
 
         #region Gesture Recognizer Callbacks
-        private void NavigationStartedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationStartedCallback(NavigationStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 relativePosition = args.normalizedOffset;
+
+            if (focuser != null)
 			{
                 NavigationStartedEvent(focuser, relativePosition, ray);
             }
         }
 
-        private void NavigationUpdatedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationUpdatedCallback(NavigationUpdatedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 relativePosition = args.normalizedOffset;
+
+            if (focuser != null)
 			{
                 NavigationUpdatedEvent(focuser, relativePosition, ray);
             }
         }
 
-        private void NavigationCompletedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationCompletedCallback(NavigationCompletedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 relativePosition = args.normalizedOffset;
+
 			if (focuser != null)
 			{
                 NavigationCompletedEvent(focuser, relativePosition, ray);
             }
         }
 
-        private void NavigationCanceledCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationCanceledCallback(NavigationCanceledEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 relativePosition = args.normalizedOffset;
+
+            if (focuser != null)
 			{
                 NavigationCanceledEvent(focuser, relativePosition, ray);
             }
         }
 
-        private void TappedCallback(InteractionSourceKind source, int tapCount, Ray ray)
+        private void TappedCallback(TappedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
+			AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = focuser.FocusRay;
+
+            args.sourcePose.TryGetPointerRay(out ray);
+
             if (focuser != null)
             {
-                if (tapCount >= 2)
+                if (args.tapCount >= 2)
                 {
                     DoubleTappedEvent(focuser, ray);
                 }
@@ -899,64 +915,86 @@ namespace HUX.Interaction
             }
         }
 
-        private void HoldStartedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldStartedCallback(HoldStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+			AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = focuser.FocusRay;
+
+            args.sourcePose.TryGetPointerRay(out ray);
+
+            if (focuser != null)
 			{
                 HoldStartedEvent(focuser, ray);
             }
         }
 
-        private void HoldCompletedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCompletedCallback(HoldCompletedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+			AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = focuser.FocusRay;
+
+            args.sourcePose.TryGetPointerRay(out ray);
+
+            if (focuser != null)
 			{
                 HoldCompletedEvent(focuser, ray);
             }
         }
 
-        private void HoldCanceledCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCanceledCallback(HoldCanceledEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+			AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = focuser.FocusRay;
+
+            if (focuser != null)
 			{
                 HoldCanceledEvent(focuser, ray);
             }
         }
 
-        private void ManipulationStartedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationStartedCallback(ManipulationStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+			AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 position = args.headPose.position;
+
+            if (focuser != null)
 			{
                 ManipulationStartedEvent(focuser, position, ray);
             }
         }
 
-        private void ManipulationUpdatedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationUpdatedCallback(ManipulationUpdatedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 position = args.headPose.position;
+
+            if (focuser != null)
 			{
                 ManipulationUpdatedEvent(focuser, position, ray);
             }
         }
 
-        private void ManipulationCompletedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCompletedCallback(ManipulationCompletedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 position = args.headPose.position;
+
+            if (focuser != null)
 			{
                 ManipulationCompletedEvent(focuser, position, ray);
             }
         }
 
-        private void ManipulationCanceledCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCanceledCallback(ManipulationCanceledEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
+            AFocuser focuser = GetFocuserForSource(args.sourceKind);
+            Ray ray = args.headPose.ray;
+            Vector3 position = args.headPose.position;
+
+            if (focuser != null)
 			{
                 ManipulationCanceledEvent(focuser, position, ray);
             }
