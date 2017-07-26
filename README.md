@@ -1,3 +1,6 @@
+# Unity Compatibility
+This branch of the MRDL Tools is meant to work with the internal Unity 5.6.2f1-MRTP12 editor build
+
 # MRDL Unity Tools
 This repo is where Microsoft's Windows Mixed Reality Design team publishes the Unity tools we use in examples and explorations. These set of tools have been separated into this repo for easy inclusion in your project or repo.  This tools repository is now used as a submodule throughout our MRDesignLabs examples.
 
