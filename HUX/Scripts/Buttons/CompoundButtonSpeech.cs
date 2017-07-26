@@ -36,7 +36,12 @@ namespace HUX.Buttons
         /// The confidence level to use for this speech command
         /// </summary>
         public KeywordConfidenceLevel ConfidenceLevel = KeywordConfidenceLevel.Unknown;
-        
+
+        /// <summary>
+        /// Variable to keep track of previous button text incase the button text changes after registration.
+        /// </summary>
+        private string prevButtonText;
+
         /// <summary>
         /// The final keyword that is registered with the Keyword Manager
         /// </summary>
@@ -60,7 +65,7 @@ namespace HUX.Buttons
                 case KeywordSourceEnum.ButtonText:
                 default:
                     CompoundButtonText text = GetComponent<CompoundButtonText>();
-                    keyWord = text.Text;
+                    keyWord = prevButtonText = text.Text;
                     break;
 
                 case KeywordSourceEnum.LocalOverride:
@@ -70,7 +75,20 @@ namespace HUX.Buttons
 
             KeywordManager.Instance.AddKeyword(keyWord, new KeywordManager.KeywordRecognizedDelegate(KeywordHandler), ConfidenceLevel);
         }
-        
+
+        public void Update()
+        {
+            // Check if Button text has changed. If so, remove previous keyword and add new button text
+            if (KeywordSource == KeywordSourceEnum.ButtonText &&
+                prevButtonText != null &&
+                GetComponent<CompoundButtonText>().Text != prevButtonText)
+            {
+                KeywordManager.Instance.RemoveKeyword(prevButtonText, KeywordHandler);
+                prevButtonText = GetComponent<CompoundButtonText>().Text;
+                KeywordManager.Instance.AddKeyword(prevButtonText, new KeywordManager.KeywordRecognizedDelegate(KeywordHandler), ConfidenceLevel);
+            }
+        }
+
         private void OnDestroy()
         {
             // Unregister callback and keyword when this script is destroyed
