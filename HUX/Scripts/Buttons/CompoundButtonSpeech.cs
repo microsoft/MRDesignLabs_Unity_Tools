@@ -75,7 +75,7 @@ namespace HUX.Buttons
             // Send a pressed message to the button through the InteractionManager
             // (This will ensure InteractionReceivers also receive the event)
 
-            gameObject.SendMessageUpwards("OnTapped", SendMessageOptions.DontRequireReceiver);
+            gameObject.SendMessageUpwards("OnTapped", this.gameObject, SendMessageOptions.DontRequireReceiver);
         }
     }
 }
