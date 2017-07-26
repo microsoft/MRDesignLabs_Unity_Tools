@@ -36,7 +36,12 @@ namespace HUX.Buttons
         /// The confidence level to use for this speech command
         /// </summary>
         public KeywordConfidenceLevel ConfidenceLevel = KeywordConfidenceLevel.Unknown;
-
+        
+        /// <summary>
+        /// The final keyword that is registered with the Keyword Manager
+        /// </summary>
+        private string keyWord;
+        
         public void Start ()
         {
             // Disable if no microphone devices are found
@@ -48,7 +53,7 @@ namespace HUX.Buttons
             if (KeywordSource == KeywordSourceEnum.None)
                 return;
 
-            string keyWord = string.Empty;
+            keyWord = string.Empty;
 
             switch (KeywordSource)
             {
@@ -65,7 +70,13 @@ namespace HUX.Buttons
 
             KeywordManager.Instance.AddKeyword(keyWord, new KeywordManager.KeywordRecognizedDelegate(KeywordHandler), ConfidenceLevel);
         }
-
+        
+        private void OnDestroy()
+        {
+            // Unregister callback and keyword when this script is destroyed
+            KeywordManager.Instance.RemoveKeyword(this.keyWord, KeywordHandler);
+        }
+        
         public void KeywordHandler(KeywordRecognizedEventArgs args)
         {
             if (!gameObject.activeSelf || !enabled)
