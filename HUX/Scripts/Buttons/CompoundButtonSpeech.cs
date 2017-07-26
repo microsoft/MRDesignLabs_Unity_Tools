@@ -42,6 +42,11 @@ namespace HUX.Buttons
         /// </summary>
         private string prevButtonText;
 
+        /// <summary>
+        /// The final keyword that is registered with the Keyword Manager
+        /// </summary>
+        private string keyWord;
+        
         public void Start ()
         {
             // Disable if no microphone devices are found
@@ -53,7 +58,7 @@ namespace HUX.Buttons
             if (KeywordSource == KeywordSourceEnum.None)
                 return;
 
-            string keyWord = string.Empty;
+            keyWord = string.Empty;
 
             switch (KeywordSource)
             {
@@ -84,6 +89,12 @@ namespace HUX.Buttons
             }
         }
 
+        private void OnDestroy()
+        {
+            // Unregister callback and keyword when this script is destroyed
+            KeywordManager.Instance.RemoveKeyword(this.keyWord, KeywordHandler);
+        }
+        
         public void KeywordHandler(KeywordRecognizedEventArgs args)
         {
             if (!gameObject.activeSelf || !enabled)
@@ -93,7 +104,7 @@ namespace HUX.Buttons
             // Send a pressed message to the button through the InteractionManager
             // (This will ensure InteractionReceivers also receive the event)
 
-            gameObject.SendMessageUpwards("OnTapped", SendMessageOptions.DontRequireReceiver);
+            gameObject.SendMessageUpwards("OnTapped", this.gameObject, SendMessageOptions.DontRequireReceiver);
         }
     }
 }

@@ -241,8 +241,6 @@ namespace HUX.Interaction
             newButton.transform.localRotation = Quaternion.identity;
             AppBarButton mtb = newButton.AddComponent<AppBarButton>();
             mtb.Initialize(this, template, customIconProfile);
-
-            RegisterInteractible(newButton);
         }
 
         private void FollowBoundingBox(bool smooth) {
