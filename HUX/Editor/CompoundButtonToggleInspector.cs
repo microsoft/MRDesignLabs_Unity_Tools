@@ -17,6 +17,7 @@ namespace HUX
             CompoundButtonToggle toggle = (CompoundButtonToggle)target;
 
             HUXEditorUtils.BeginSectionBox("Target");
+
             toggle.Target = HUXEditorUtils.DropDownComponentField<MonoBehaviour>("Component", toggle.Target, toggle.transform, true);
             FieldInfo fieldInfo = null;
             Type profileType = null;

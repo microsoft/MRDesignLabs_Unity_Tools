@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace HUX
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(CompoundButtonAnim))]
     public class CompoundButtonAnimInspector : Editor
     {
@@ -17,15 +18,21 @@ namespace HUX
 
             CompoundButtonAnim acb = (CompoundButtonAnim)target;
 
-            acb.TargetAnimator = HUXEditorUtils.DropDownComponentField<Animator>("Target animator", acb.TargetAnimator, acb.transform);
-
-            if (acb.TargetAnimator == null)
+            if (UnityEditor.Selection.gameObjects.Length == 1)
             {
-                GUI.color = HUXEditorUtils.ErrorColor;
-                EditorGUILayout.LabelField("You must chooes a target animator.");
-                HUXEditorUtils.SaveChanges(target);
-                return;
+                acb.TargetAnimator = HUXEditorUtils.DropDownComponentField<Animator>("Target animator", acb.TargetAnimator, acb.transform);
 
+                if (acb.TargetAnimator == null)
+                {
+                    GUI.color = HUXEditorUtils.ErrorColor;
+                    EditorGUILayout.LabelField("You must chooes a target animator.");
+                    HUXEditorUtils.SaveChanges(target);
+                    return;
+
+                }
+            } else
+            {
+                EditorGUILayout.LabelField("(This section not supported for multiple objects)", EditorStyles.miniLabel);
             }
 
             Animator animator = acb.TargetAnimator;

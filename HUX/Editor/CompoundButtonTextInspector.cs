@@ -8,10 +8,18 @@ using UnityEngine;
 
 namespace HUX
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(CompoundButtonText))]
     public class CompoundButtonTextInspector : Editor
     {
         public GUIStyle textAreaLabel;
+
+        SerializedProperty profileProp;
+
+        void OnEnable()
+        {
+            profileProp = serializedObject.FindProperty("Profile");
+        }
 
         public override void OnInspectorGUI()
         {
@@ -29,7 +37,7 @@ namespace HUX
                 return;
             }
 
-            textButton.Profile = HUXEditorUtils.DrawProfileField<ButtonTextProfile>(textButton.Profile);
+            profileProp.objectReferenceValue = HUXEditorUtils.DrawProfileField<ButtonTextProfile>(profileProp.objectReferenceValue as ButtonTextProfile);
             
             if (textButton.Profile == null)
             {
@@ -37,16 +45,22 @@ namespace HUX
                 return;
             }
 
-            textButton.TextMesh = HUXEditorUtils.DropDownComponentField <TextMesh>("Text mesh", textButton.TextMesh, textButton.transform);
-
-            //textButton.TextMesh = (TextMesh)EditorGUILayout.ObjectField("Text mesh", textButton.TextMesh, typeof(TextMesh), true);
-
-            if (textButton.TextMesh == null)
+            if (UnityEditor.Selection.gameObjects.Length == 1)
             {
-                GUI.color = HUXEditorUtils.ErrorColor;
-                EditorGUILayout.LabelField("You must select a text mesh object.");
-                HUXEditorUtils.SaveChanges(target);
-                return;
+                textButton.TextMesh = HUXEditorUtils.DropDownComponentField<TextMesh>("Text mesh", textButton.TextMesh, textButton.transform);
+
+                //textButton.TextMesh = (TextMesh)EditorGUILayout.ObjectField("Text mesh", textButton.TextMesh, typeof(TextMesh), true);
+
+                if (textButton.TextMesh == null)
+                {
+                    GUI.color = HUXEditorUtils.ErrorColor;
+                    EditorGUILayout.LabelField("You must select a text mesh object.");
+                    HUXEditorUtils.SaveChanges(target);
+                    return;
+                }
+            } else
+            {
+                EditorGUILayout.LabelField("(This section not supported for multiple objects)", EditorStyles.miniLabel);
             }
 
             HUXEditorUtils.BeginSectionBox("Overrides");
@@ -93,6 +107,7 @@ namespace HUX
             HUXEditorUtils.DrawProfileInspector(textButton.Profile, textButton);
 
             HUXEditorUtils.SaveChanges(target);
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

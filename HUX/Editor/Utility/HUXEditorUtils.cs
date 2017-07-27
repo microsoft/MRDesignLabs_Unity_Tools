@@ -15,11 +15,15 @@ namespace HUX
     {
         public readonly static Color DefaultColor = new Color(1f, 1f, 1f);
         public readonly static Color DisabledColor = new Color(0.6f, 0.6f, 0.6f);
-        public readonly static Color HelpBoxColor = new Color(0.8f, 0.8f, 0.8f);
+        public readonly static Color BorderedColor = new Color(0.8f, 0.8f, 0.8f);
         public readonly static Color WarningColor = new Color(1f, 0.85f, 0.6f);
         public readonly static Color ErrorColor = new Color(1f, 0.55f, 0.5f);
         public readonly static Color SuccessColor = new Color(0.8f, 1f, 0.75f);
         public readonly static Color ObjectColor = new Color(0.85f, 0.9f, 1f);
+        public readonly static Color HelpBoxColor = new Color(0.22f, 0.23f, 0.24f, 0.45f);
+        public readonly static Color SectionColor = new Color(0.42f, 0.43f, 0.47f, 0.25f);
+        public readonly static Color DarkColor = new Color(0.1f, 0.1f, 0.1f);
+        public readonly static Color ObjectColorEmpty = new Color(0.75f, 0.8f, 0.9f);
 
         /// <summary>
         /// Draws a field for scriptable object profiles
@@ -121,9 +125,12 @@ namespace HUX
             options[0] = "(None)";
             for (int i = 0; i < optionObjects.Length; i++)
             {
-                if (showComponentName) {
+                if (showComponentName)
+                {
                     options[i + 1] = optionObjects[i].GetType().Name + " (" + optionObjects[i].name + ")";
-                } else {
+                }
+                else
+                {
                     options[i + 1] = optionObjects[i].name;
                 }
                 if (obj == optionObjects[i])
@@ -150,6 +157,7 @@ namespace HUX
 
             return obj;
         }
+
 
         /// <summary>
         /// Draws enum values as a set of toggle fields
@@ -210,7 +218,7 @@ namespace HUX
         /// <param name="defaultName"></param>
         /// <param name="defaultVal"></param>
         /// <returns></returns>
-        public static int EnumCheckboxField<T>(string label, T enumObj, string defaultName, T defaultVal) where T : struct, IConvertible
+        public static int EnumCheckboxField<T>(string label, T enumObj, string defaultName, T defaultVal, bool ignoreNone = true, bool ignoreAll = true) where T : struct, IConvertible
         {
             if (!typeof(T).IsEnum)
             {
@@ -221,11 +229,25 @@ namespace HUX
             int enumFlags = Convert.ToInt32(enumObj);
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField(label, EditorStyles.miniLabel);
-            DrawDivider();
-            foreach (T enumVal in Enum.GetValues(typeof(T)))
+            if (!string.IsNullOrEmpty(label)) {
+                EditorGUILayout.LabelField(label, EditorStyles.miniLabel);
+                DrawDivider();
+            }
+
+            System.Array enumVals = Enum.GetValues(typeof(T));
+            int lastvalue = Convert.ToInt32((T)enumVals.GetValue(enumVals.GetLength(0) - 1));
+
+            foreach (T enumVal in enumVals)
             {
                 int flagVal = Convert.ToInt32(enumVal);
+                if (ignoreNone && flagVal == 0 && enumVal.ToString().ToLower() == "none")
+                {
+                    continue;
+                }
+                if (ignoreAll && flagVal == lastvalue && enumVal.ToString().ToLower() == "all")
+                {
+                    continue;
+                }
                 bool selected = (flagVal & enumFlags) != 0;
                 selected = EditorGUILayout.Toggle(enumVal.ToString(), selected);
                 // If it's selected add it to the enumObj, otherwise remove it
@@ -250,7 +272,7 @@ namespace HUX
             return enumFlags;
         }
 
-        public static int EnumCheckboxField<T>(string label, T enumObj, string defaultName, T defaultVal, T valOnZero) where T : struct, IConvertible
+        public static int EnumCheckboxField<T>(string label, T enumObj, string defaultName, T defaultVal, T valOnZero, bool ignoreNone = true, bool ignoreAll = true) where T : struct, IConvertible
         {
             if (!typeof(T).IsEnum)
             {
@@ -263,10 +285,17 @@ namespace HUX
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField(label, EditorStyles.miniLabel);
             DrawDivider();
-            foreach (T enumVal in Enum.GetValues(typeof(T)))
+            System.Array enumVals = Enum.GetValues(typeof(T));
+            int lastvalue = Convert.ToInt32((T)enumVals.GetValue(enumVals.GetLength(0) - 1));
+
+            foreach (T enumVal in enumVals)
             {
                 int flagVal = Convert.ToInt32(enumVal);
-                if (flagVal == 0)
+                if (ignoreNone && flagVal == 0 && enumVal.ToString().ToLower() == "none")
+                {
+                    continue;
+                }
+                if (ignoreAll && flagVal == lastvalue && enumVal.ToString().ToLower() == "all")
                 {
                     continue;
                 }
@@ -298,7 +327,7 @@ namespace HUX
             return enumFlags;
         }
 
-        public static string MaterialPropertyName(string property, Material mat, ShaderUtil.ShaderPropertyType type, bool allowNone = true, string defaultProperty = "_Color")
+        public static string MaterialPropertyName(string property, Material mat, ShaderUtil.ShaderPropertyType type, bool allowNone = true, string defaultProperty = "_Color", string labelName = null)
         {
             Color tColor = GUI.color;
             // Create a list of available color and value properties
@@ -329,7 +358,11 @@ namespace HUX
                 }
 
                 GUI.color = string.IsNullOrEmpty(property) ? HUXEditorUtils.DisabledColor : HUXEditorUtils.DefaultColor;
-                int newPropIndex = EditorGUILayout.Popup(type.ToString(), selectedPropIndex, props.ToArray());
+                if (string.IsNullOrEmpty (labelName))
+                {
+                    labelName = type.ToString();
+                }
+                int newPropIndex = EditorGUILayout.Popup(labelName, selectedPropIndex, props.ToArray());
                 if (allowNone) {
                     property = (newPropIndex > 0 ? props[newPropIndex] : string.Empty);
                 } else {
@@ -350,8 +383,7 @@ namespace HUX
             }
         }
 
-        public static void Header(string header)
-        {
+        public static void Header (string header) {
             GUIStyle headerStyle = new GUIStyle(EditorStyles.boldLabel);
             headerStyle.fontSize = 18;
             EditorGUILayout.LabelField(header, headerStyle, GUILayout.MinHeight(24));
@@ -388,7 +420,9 @@ namespace HUX
 
         public static void BeginProfileBox()
         {
-            BeginSectionBox("Profile", HUXEditorUtils.WarningColor);
+            GUI.color = HUXEditorUtils.WarningColor;
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            DrawSubtleMiniLabel("Profile" + ":");
             DrawSubtleMiniLabel("(Warning: this section edits the button profile. These changes will affect all buttons that use this profile.)");
         }
 
@@ -400,14 +434,60 @@ namespace HUX
         public static void BeginSectionBox(string label)
         {
             GUI.color = DefaultColor;
+            /*GUIStyle boxStyle = new GUIStyle(EditorStyles.helpBox);
+            boxStyle.normal.background = SectionBackground;*/
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             DrawSubtleMiniLabel(label + ":");
+        }
+
+        public static void HelpBox(bool show, string text) {
+
+            if (show) {
+                GUI.color = ObjectColor;
+                GUIStyle helpBoxStyle = new GUIStyle(EditorStyles.helpBox);
+                helpBoxStyle.wordWrap = true;
+                helpBoxStyle.fontSize = 9;
+                helpBoxStyle.normal.background = HelpBoxBackground;
+                EditorGUILayout.LabelField(text, helpBoxStyle);
+            }
+            GUI.color = DefaultColor;
+        }
+
+        public static bool BeginSectionBox(string label, ref bool foldout) {
+            GUI.color = DefaultColor;
+            /*GUIStyle boxStyle = new GUIStyle(EditorStyles.helpBox);
+            boxStyle.normal.background = SectionBackground;*/
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            GUI.color = Color.Lerp(DefaultColor, Color.grey, 0.5f); ;
+            //GUI.contentColor = DarkColor;
+            GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
+            foldoutStyle.fontStyle = FontStyle.Normal;
+            foldoutStyle.fontSize = 9;
+            foldoutStyle.fontStyle = FontStyle.Normal;
+
+            foldout = EditorGUILayout.Foldout(foldout, label + (foldout ? ":" : ""), true, foldoutStyle);
+
+            GUI.color = DefaultColor;
+            //GUI.contentColor = Color.white;
+
+            return foldout;
         }
 
         public static void BeginSectionBox(string label, Color color)
         {
             GUI.color = color;
+            /*GUIStyle boxStyle = new GUIStyle(EditorStyles.helpBox);
+            boxStyle.normal.background = SectionBackground;*/
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            /*GUIStyle foldoutStyle = new GUIStyle(EditorStyles.wordWrappedLabel);
+            foldoutStyle.fontStyle = FontStyle.Normal;
+            foldoutStyle.fontSize = 12;
+            foldoutStyle.fontStyle = FontStyle.Bold;
+
+            EditorGUILayout.LabelField(label + ":", foldoutStyle);*/
+
             DrawSubtleMiniLabel(label + ":");
         }
 
@@ -416,10 +496,21 @@ namespace HUX
             EditorGUILayout.EndVertical();
         }
 
+        public static void BeginSubSectionBox(string label, Color sectionColor)
+        {
+            GUI.color = sectionColor;
+            GUIStyle boxStyle = new GUIStyle(EditorStyles.helpBox);
+            boxStyle.normal.background = SectionBackground;
+            EditorGUILayout.BeginVertical(boxStyle);
+            EditorGUILayout.LabelField(label + ":", EditorStyles.boldLabel);
+        }
+
         public static void BeginSubSectionBox(string label)
         {
             GUI.color = DefaultColor;
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUIStyle boxStyle = new GUIStyle(EditorStyles.helpBox);
+            boxStyle.normal.background = SectionBackground;
+            EditorGUILayout.BeginVertical(boxStyle);
             EditorGUILayout.LabelField(label + ":", EditorStyles.boldLabel);
         }
 
@@ -624,5 +715,38 @@ namespace HUX
 
             return false;
         }
+
+        private static Texture2D SectionBackground {
+            get {
+                if (sectionBackground == null) {
+                    sectionBackground = new Texture2D(2, 2);
+                    var pix = new Color[2 * 2];
+                    for (int i = 0; i < pix.Length; i++) {
+                        pix[i] = SectionColor;
+                    }
+                    sectionBackground.SetPixels(pix);
+                    sectionBackground.Apply();
+                }
+                return sectionBackground;
+            }
+        }
+
+        private static Texture2D HelpBoxBackground {
+            get {
+                if (helpBoxBackground == null) {
+                    helpBoxBackground = new Texture2D(2, 2);
+                    var pix = new Color[2 * 2];
+                    for (int i = 0; i < pix.Length; i++) {
+                        pix[i] = HelpBoxColor;
+                    }
+                    helpBoxBackground.SetPixels(pix);
+                    helpBoxBackground.Apply();
+                }
+                return helpBoxBackground;
+            }
+        }
+
+        private static Texture2D helpBoxBackground = null;
+        private static Texture2D sectionBackground = null;
     }
 }

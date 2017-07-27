@@ -8,15 +8,23 @@ using UnityEngine;
 
 namespace HUX
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(CompoundButtonSounds))]
     public class CompoundButtonSoundsInspector : Editor
     {
+        SerializedProperty profileProp;
+
+        void OnEnable()
+        {
+            profileProp = serializedObject.FindProperty("Profile");
+        }
+
         public override void OnInspectorGUI()
         {
             CompoundButtonSounds soundButton = (CompoundButtonSounds)target;
 
             GUI.color = Color.white;
-            soundButton.Profile = HUXEditorUtils.DrawProfileField<ButtonSoundProfile>(soundButton.Profile);
+            profileProp.objectReferenceValue = HUXEditorUtils.DrawProfileField<ButtonSoundProfile>(profileProp.objectReferenceValue as ButtonSoundProfile);
 
             if (soundButton.Profile == null)
             {
@@ -27,6 +35,7 @@ namespace HUX
             HUXEditorUtils.DrawProfileInspector(soundButton.Profile, soundButton);
 
             HUXEditorUtils.SaveChanges(target, soundButton.Profile);
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

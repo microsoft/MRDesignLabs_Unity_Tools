@@ -8,9 +8,15 @@ using UnityEngine;
 
 namespace HUX
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(CompoundButtonIcon))]
     public class CompoundButtonIconInspector : Editor
     {
+        void OnEnable()
+        {
+            profileProp = serializedObject.FindProperty("Profile");
+        }
+
         public override void OnInspectorGUI()
         {
             CompoundButtonIcon iconButton = (CompoundButtonIcon)target;
@@ -21,46 +27,52 @@ namespace HUX
                 HUXEditorUtils.SaveChanges(target);
                 return;
             }
-            
-            iconButton.Profile = HUXEditorUtils.DrawProfileField<ButtonIconProfile>(iconButton.Profile);
-            
+
+            profileProp.objectReferenceValue = HUXEditorUtils.DrawProfileField<ButtonIconProfile>(profileProp.objectReferenceValue as ButtonIconProfile);
+            //iconButton.Profile = HUXEditorUtils.DrawProfileField<ButtonIconProfile>(iconButton.Profile);
+
             if (iconButton.Profile == null)
             {
                 HUXEditorUtils.SaveChanges(target);
                 return;
             }
 
-            HUXEditorUtils.BeginSectionBox("Icon settings");
-            iconButton.IconRenderer = HUXEditorUtils.DropDownComponentField<MeshRenderer>("Icon renderer", iconButton.IconRenderer, iconButton.transform);
-
-            if (iconButton.IconRenderer == null)
+               HUXEditorUtils.BeginSectionBox("Icon settings");
+            if (UnityEditor.Selection.gameObjects.Length == 1)
             {
-                HUXEditorUtils.ErrorMessage("You must specify an icon renderer", null);
-                HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
-                return;
-            }
+                iconButton.IconRenderer = HUXEditorUtils.DropDownComponentField<MeshRenderer>("Icon renderer", iconButton.IconRenderer, iconButton.transform);
 
-            if (iconButton.Profile.IconMaterial == null)
+                if (iconButton.IconRenderer == null)
+                {
+                    HUXEditorUtils.ErrorMessage("You must specify an icon renderer", null);
+                    HUXEditorUtils.EndSectionBox();
+                    HUXEditorUtils.SaveChanges(target);
+                    return;
+                }
+
+                if (iconButton.Profile.IconMaterial == null)
+                {
+                    HUXEditorUtils.ErrorMessage("You must specify an icon material in the profile", null);
+                    HUXEditorUtils.EndSectionBox();
+                    HUXEditorUtils.SaveChanges(target);
+                    return;
+                }
+
+                if (iconButton.Profile.IconMesh == null)
+                {
+                    HUXEditorUtils.ErrorMessage("You must specify an icon mesh in the profile", null);
+                    HUXEditorUtils.EndSectionBox();
+                    HUXEditorUtils.SaveChanges(target);
+                    return;
+                }
+                // Icon profiles provide their own fields for the icon name
+                iconButton.Alpha = EditorGUILayout.Slider("Icon transparency", iconButton.Alpha, 0f, 1f);
+
+                iconButton.IconName = iconButton.Profile.DrawIconSelectField(iconButton.IconName);
+            } else
             {
-                HUXEditorUtils.ErrorMessage("You must specify an icon material in the profile", null);
-                HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
-                return;
+                EditorGUILayout.LabelField("(This section not supported for multiple objects)", EditorStyles.miniLabel);
             }
-
-            if (iconButton.Profile.IconMesh == null)
-            {
-                HUXEditorUtils.ErrorMessage("You must specify an icon mesh in the profile", null);
-                HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
-                return;
-            }
-
-            // Icon profiles provide their own fields for the icon name
-            iconButton.Alpha = EditorGUILayout.Slider("Icon transparency", iconButton.Alpha, 0f, 1f);
-
-            iconButton.IconName = iconButton.Profile.DrawIconSelectField(iconButton.IconName);
 
             HUXEditorUtils.EndSectionBox();
 
@@ -77,6 +89,7 @@ namespace HUX
             }*/
 
             HUXEditorUtils.SaveChanges(iconButton, iconButton.Profile);
+            serializedObject.ApplyModifiedProperties();
         }
 
         void ClickToOpen()
@@ -84,5 +97,7 @@ namespace HUX
             CompoundButtonIcon iconButton = (CompoundButtonIcon)target;
             UnityEditor.Selection.activeObject = iconButton.Profile;
         }
+
+        private SerializedProperty profileProp;
     }
 }
