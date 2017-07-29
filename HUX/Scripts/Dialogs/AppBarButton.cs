@@ -48,7 +48,8 @@ namespace HUX.Interaction
                 newTemplate.EventTarget.RegisterInteractible(gameObject);
             } else
             {
-                Debug.LogError("No target found for button " + newTemplate.Name + " - button will have no effect.");
+                // Register the button with the parent app bar
+                newParentToolBar.RegisterInteractible(gameObject);
             }
         }
 
