@@ -19,6 +19,18 @@ namespace HUX.Interaction
         public const int MaxCustomButtons = 5;
 
         /// <summary>
+        /// Where to display the app bar on the y axis
+        /// This can be set to negative values
+        /// to force the app bar to appear below the object
+        /// </summary>
+        public float HoverOffsetYScale = 0.25f;
+
+        /// <summary>
+        /// Pushes the app bar away from the object
+        /// </summary>
+        public float HoverOffsetZ = 0f;
+
+        /// <summary>
         /// Class used for building toolbar buttons
         /// (not yet in use)
         /// </summary>
@@ -269,19 +281,24 @@ namespace HUX.Interaction
             float maxXYScale = Mathf.Max(scale.x, scale.y);
             float closestSoFar = Mathf.Infinity;
             Vector3 finalPosition = Vector3.zero;
+            Vector3 finalForward = Vector3.zero;
             Vector3 headPosition = Camera.main.transform.position;
 
             for (int i = 0; i < forwards.Length; i++) {
                 Vector3 nextPosition = boundingBox.transform.position +
                 (forwards[i] * -maxXYScale) +
-                (Vector3.up * (-scale.y * 0.25f));
+                (Vector3.up * (-scale.y * HoverOffsetYScale));
 
                 float distance = Vector3.Distance(nextPosition, headPosition);
                 if (distance < closestSoFar) {
                     closestSoFar = distance;
                     finalPosition = nextPosition;
+                    finalForward = forwards[i];
                 }
             }
+
+            // Apply hover offset
+            finalPosition += (finalForward * -HoverOffsetZ);
 
             // Follow our bounding box
             if (smooth) {

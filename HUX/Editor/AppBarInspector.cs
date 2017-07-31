@@ -37,6 +37,8 @@ namespace HUX
             }
 
             HUXEditorUtils.BeginSectionBox("App bar options");
+            appBar.HoverOffsetYScale = EditorGUILayout.Slider("Hover Offset (Y)", appBar.HoverOffsetYScale, -1f, 2f);
+            appBar.HoverOffsetZ = EditorGUILayout.Slider("Hover Offset (Z)", appBar.HoverOffsetZ, 0f, 2f);
             appBar.SquareButtonPrefab = (GameObject)EditorGUILayout.ObjectField("Button Prefab", appBar.SquareButtonPrefab, typeof(GameObject));
             GUI.color = (appBar.CustomButtonIconProfile == null) ? HUXEditorUtils.DisabledColor : HUXEditorUtils.DefaultColor;
             appBar.CustomButtonIconProfile = (ButtonIconProfile)EditorGUILayout.ObjectField("Custom Icon Profile", appBar.CustomButtonIconProfile, typeof(ButtonIconProfile));

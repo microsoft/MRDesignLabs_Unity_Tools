@@ -91,6 +91,9 @@ namespace HUX.Buttons
 
         private void OnDestroy()
         {
+            if (string.IsNullOrEmpty(this.keyWord))
+                return;
+
             // Unregister callback and keyword when this script is destroyed
             KeywordManager.Instance.RemoveKeyword(this.keyWord, KeywordHandler);
         }
