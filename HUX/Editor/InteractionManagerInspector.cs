@@ -17,15 +17,15 @@ namespace HUX
         {
             InteractionManager interactionManager = (InteractionManager)target;
 
-            interactionManager.RecognizableGesures = (UnityEngine.VR.WSA.Input.GestureSettings)HUXEditorUtils.EnumCheckboxField<UnityEngine.VR.WSA.Input.GestureSettings>(
+            interactionManager.RecognizableGesures = (UnityEngine.XR.WSA.Input.GestureSettings)HUXEditorUtils.EnumCheckboxField<UnityEngine.XR.WSA.Input.GestureSettings>(
                 "Recognizable gestures",
                 interactionManager.RecognizableGesures,
                 "Default",
-                UnityEngine.VR.WSA.Input.GestureSettings.Tap |
-                UnityEngine.VR.WSA.Input.GestureSettings.DoubleTap |
-                UnityEngine.VR.WSA.Input.GestureSettings.Hold | 
-                UnityEngine.VR.WSA.Input.GestureSettings.NavigationX | 
-                UnityEngine.VR.WSA.Input.GestureSettings.NavigationY);
+                UnityEngine.XR.WSA.Input.GestureSettings.Tap |
+                UnityEngine.XR.WSA.Input.GestureSettings.DoubleTap |
+                UnityEngine.XR.WSA.Input.GestureSettings.Hold | 
+                UnityEngine.XR.WSA.Input.GestureSettings.NavigationX | 
+                UnityEngine.XR.WSA.Input.GestureSettings.NavigationY);
 
             HUXEditorUtils.SaveChanges(target);
         }

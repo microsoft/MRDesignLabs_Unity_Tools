@@ -79,9 +79,9 @@ public class ManualCameraControl : MonoBehaviour
         m_InitialRotation = m_Veil.transform.rotation;
 
         // VR Mode
-        if (VRSettings.loadedDeviceName == "Oculus" || VRSettings.loadedDeviceName == "PlayStationVR")
+        if (UnityEngine.XR.XRSettings.loadedDeviceName == "Oculus" || UnityEngine.XR.XRSettings.loadedDeviceName == "PlayStationVR")
         {
-            InputTracking.Recenter();
+            UnityEngine.XR.InputTracking.Recenter();
         }
     }
 

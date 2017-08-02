@@ -158,7 +158,7 @@ namespace HUX.Focus
 			if (m_UseFocalPoint && m_GazeFocuser != null && m_GazeFocuser.Cursor != null && m_FixedFocalPoint != Vector3.zero)
 			{
 				Vector3 focalPoint = m_FixedFocalPoint != Vector3.zero ? m_FixedFocalPoint : m_GazeFocuser.Cursor.transform.position;
-				UnityEngine.VR.WSA.HolographicSettings.SetFocusPointForFrame(focalPoint);
+				UnityEngine.XR.WSA.HolographicSettings.SetFocusPointForFrame(focalPoint);
 			}
 #endif
 

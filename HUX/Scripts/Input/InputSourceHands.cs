@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System;
 
 #if UNITY_WSA
-using UnityEngine.VR.WSA.Input;
+
 #endif
 
 public class InputSourceHands : InputSourceBase, ITargetingInputSource
@@ -373,31 +373,31 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
     // Subscribe to the hand events
     private void Awake() {
 #if UNITY_WSA
-        InteractionManager.SourceDetected += WSASourceEntered;
-        InteractionManager.SourceLost += WSASourceLost;
-        InteractionManager.SourceUpdated += WSASourceUpdate;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceDetected += WSASourceEntered;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceLost += WSASourceLost;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceUpdated += WSASourceUpdate;
 
-        InteractionManager.SourcePressed += WSAFingerPressed;
-        InteractionManager.SourceReleased += WSAFingerReleased;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourcePressed += WSAFingerPressed;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceReleased += WSAFingerReleased;
 #endif
     }
 
     // Cleanup hand event subscriptions
     private void OnDestroy() {
 #if UNITY_WSA
-        InteractionManager.SourceDetected -= WSASourceEntered;
-        InteractionManager.SourceLost -= WSASourceLost;
-        InteractionManager.SourceUpdated -= WSASourceUpdate;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceDetected -= WSASourceEntered;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceLost -= WSASourceLost;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceUpdated -= WSASourceUpdate;
 
-        InteractionManager.SourcePressed -= WSAFingerPressed;
-        InteractionManager.SourceReleased -= WSAFingerReleased;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourcePressed -= WSAFingerPressed;
+        UnityEngine.XR.WSA.Input.InteractionManager.SourceReleased -= WSAFingerReleased;
 #endif
     }
 
 #if UNITY_WSA
-    public void WSASourceEntered(InteractionSourceState state) {
+    public void WSASourceEntered(UnityEngine.XR.WSA.Input.InteractionSourceState state) {
         // Track Hands
-        if (state.source.kind == InteractionSourceKind.Hand) {
+        if (state.source.kind == UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand) {
             CurrentHandState inputState = new CurrentHandState();
 
             state.properties.location.TryGetPosition(out inputState.Position);
@@ -407,8 +407,8 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         }
     }
 
-    public void WSASourceUpdate(InteractionSourceState state) {
-        if (state.source.kind == InteractionSourceKind.Hand) {
+    public void WSASourceUpdate(UnityEngine.XR.WSA.Input.InteractionSourceState state) {
+        if (state.source.kind == UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand) {
             Vector3 newPosition;
             if (state.properties.location.TryGetPosition(out newPosition)) {
                 CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
@@ -420,8 +420,8 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         }
     }
 
-    public void WSASourceLost(InteractionSourceState state) {
-        if (state.source.kind == InteractionSourceKind.Hand) {
+    public void WSASourceLost(UnityEngine.XR.WSA.Input.InteractionSourceState state) {
+        if (state.source.kind == UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand) {
             CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id); // handID
 
 			if (inputState != null) {
@@ -431,7 +431,7 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         }
     }
 
-    private void WSAFingerReleased(InteractionSourceState state) {
+    private void WSAFingerReleased(UnityEngine.XR.WSA.Input.InteractionSourceState state) {
         CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id);
         if (inputState != null) {
             UpdateFromWSASource(inputState, state);
@@ -439,7 +439,7 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
         }
     }
 
-    private void WSAFingerPressed(InteractionSourceState state) {
+    private void WSAFingerPressed(UnityEngine.XR.WSA.Input.InteractionSourceState state) {
         CurrentHandState inputState = trackedHands.Find(CurrentInputState => CurrentInputState.HandId == state.source.id);
         if (inputState != null) {
             UpdateFromWSASource(inputState, state);
@@ -477,10 +477,10 @@ public class InputSourceHands : InputSourceBase, ITargetingInputSource
     }
 
 #if UNITY_WSA
-    private void UpdateFromWSASource(CurrentHandState currentInputState, InteractionSourceState state) {
+    private void UpdateFromWSASource(CurrentHandState currentInputState, UnityEngine.XR.WSA.Input.InteractionSourceState state) {
         currentInputState.HandId = state.source.id;
         currentInputState.LastPressed = currentInputState.Pressed;
-        currentInputState.Pressed = state.pressed;
+        currentInputState.Pressed = state.anyPressed;
         state.properties.location.TryGetVelocity(out currentInputState.Velocity);
 
         currentInputState.SourceLossRisk = state.properties.sourceLossRisk;

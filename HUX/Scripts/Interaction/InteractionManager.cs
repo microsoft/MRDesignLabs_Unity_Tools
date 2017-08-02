@@ -7,7 +7,7 @@ using System;
 using HUX.Utility;
 using UnityEngine.EventSystems;
 using HUX.Focus;
-using UnityEngine.VR.WSA.Input;
+
 
 namespace HUX.Interaction
 {
@@ -36,9 +36,9 @@ namespace HUX.Interaction
         /// <summary>
         /// Currently active gesture recognizer.
         /// </summary>
-        public GestureRecognizer ActiveRecognizer { get; private set; }
+        public UnityEngine.XR.WSA.Input.GestureRecognizer ActiveRecognizer { get; private set; }
 
-		public UnityEngine.VR.WSA.Input.InteractionManager ActiveInteractionManager { get; private set; }
+		public UnityEngine.XR.WSA.Input.InteractionManager ActiveInteractionManager { get; private set; }
 
         /// <summary>
         /// is the user currently navigating.
@@ -59,7 +59,7 @@ namespace HUX.Interaction
         /// <summary>
         /// Which gestures the interaction manager's active recognizer will capture
         /// </summary>
-        public GestureSettings RecognizableGesures = GestureSettings.Tap | GestureSettings.DoubleTap | GestureSettings.Hold | GestureSettings.NavigationX | GestureSettings.NavigationY;
+        public UnityEngine.XR.WSA.Input.GestureSettings RecognizableGesures = UnityEngine.XR.WSA.Input.GestureSettings.Tap | UnityEngine.XR.WSA.Input.GestureSettings.DoubleTap | UnityEngine.XR.WSA.Input.GestureSettings.Hold | UnityEngine.XR.WSA.Input.GestureSettings.NavigationX | UnityEngine.XR.WSA.Input.GestureSettings.NavigationY;
 
         /// <summary>
         /// Events that trigger manipulation or navigation is done on the specified object.
@@ -105,44 +105,44 @@ namespace HUX.Interaction
 		// This should be Start instead of Awake right?
 		protected void Start()
         {
-            ActiveRecognizer = new GestureRecognizer();
+            ActiveRecognizer = new UnityEngine.XR.WSA.Input.GestureRecognizer();
 
             ActiveRecognizer.SetRecognizableGestures(RecognizableGesures);
 
-            ActiveRecognizer.TappedEvent += TappedCallback;
+            ActiveRecognizer.OnTappedEvent += TappedCallback;
 
-            ActiveRecognizer.NavigationStartedEvent += NavigationStartedCallback;
-            ActiveRecognizer.NavigationUpdatedEvent += NavigationUpdatedCallback;
-            ActiveRecognizer.NavigationCompletedEvent += NavigationCompletedCallback;
-            ActiveRecognizer.NavigationCanceledEvent += NavigationCanceledCallback;
+            ActiveRecognizer.OnNavigationStartedEvent += NavigationStartedCallback;
+            ActiveRecognizer.OnNavigationUpdatedEvent += NavigationUpdatedCallback;
+            ActiveRecognizer.OnNavigationCompletedEvent += NavigationCompletedCallback;
+            ActiveRecognizer.OnNavigationCanceledEvent += NavigationCanceledCallback;
 
-            ActiveRecognizer.HoldStartedEvent += HoldStartedCallback;
-            ActiveRecognizer.HoldCompletedEvent += HoldCompletedCallback;
-            ActiveRecognizer.HoldCanceledEvent += HoldCanceledCallback;
+            ActiveRecognizer.OnHoldStartedEvent += HoldStartedCallback;
+            ActiveRecognizer.OnHoldCompletedEvent += HoldCompletedCallback;
+            ActiveRecognizer.OnHoldCanceledEvent += HoldCanceledCallback;
 
-            ActiveRecognizer.ManipulationStartedEvent += ManipulationStartedCallback;
-            ActiveRecognizer.ManipulationUpdatedEvent += ManipulationUpdatedCallback;
-            ActiveRecognizer.ManipulationCompletedEvent += ManipulationCompletedCallback;
-            ActiveRecognizer.ManipulationCanceledEvent += ManipulationCanceledCallback;
+            ActiveRecognizer.OnManipulationStartedEvent += ManipulationStartedCallback;
+            ActiveRecognizer.OnManipulationUpdatedEvent += ManipulationUpdatedCallback;
+            ActiveRecognizer.OnManipulationCompletedEvent += ManipulationCompletedCallback;
+            ActiveRecognizer.OnManipulationCanceledEvent += ManipulationCanceledCallback;
 
             ActiveRecognizer.StartCapturingGestures();
             SetupEvents(true);
 
-			UnityEngine.VR.WSA.Input.InteractionManager.SourcePressed += InteractionManager_SourcePressedCallback;
-			UnityEngine.VR.WSA.Input.InteractionManager.SourceReleased += InteractionManager_SourceReleasedCallback;
+			UnityEngine.XR.WSA.Input.InteractionManager.OnSourcePressed += InteractionManager_SourcePressedCallback;
+			UnityEngine.XR.WSA.Input.InteractionManager.OnSourceReleased += InteractionManager_SourceReleasedCallback;
 
 			bLockFocus = true;
 		}
 
-		private void InteractionManager_SourcePressedCallback(InteractionSourceState state)
+		private void InteractionManager_SourcePressedCallback(UnityEngine.XR.WSA.Input.SourcePressedEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+			AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnPressedEvent(focuser);
 		}
 
-		private void InteractionManager_SourceReleasedCallback(InteractionSourceState state)
+		private void InteractionManager_SourceReleasedCallback(UnityEngine.XR.WSA.Input.SourceReleasedEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+			AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnReleasedEvent(focuser);
 		}
 
@@ -153,7 +153,7 @@ namespace HUX.Interaction
 			// Only do manipulation event simulation in editor, and should we do it on PC?
 			if (Application.platform == RuntimePlatform.WindowsEditor /*|| Application.platform == RuntimePlatform.WindowsPlayer*/)
 			{
-				AFocuser focuser = GetFocuserForSource(InteractionSourceKind.Hand);
+				AFocuser focuser = GetFocuserForSource(UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand);
 
 				// Use the head's position + forward, since the focuser ray might point to the locked focus
 				Vector3 newPos = Veil.Instance.HeadTransform.position + Veil.Instance.HeadTransform.forward;
@@ -304,21 +304,21 @@ namespace HUX.Interaction
 
 		void OnDestroy()
         {
-            ActiveRecognizer.TappedEvent -= TappedCallback;
+            ActiveRecognizer.OnTappedEvent -= TappedCallback;
 
-            ActiveRecognizer.NavigationStartedEvent -= NavigationStartedCallback;
-            ActiveRecognizer.NavigationUpdatedEvent -= NavigationUpdatedCallback;
-            ActiveRecognizer.NavigationCompletedEvent -= NavigationCompletedCallback;
-            ActiveRecognizer.NavigationCanceledEvent -= NavigationCanceledCallback;
+            ActiveRecognizer.OnNavigationStartedEvent -= NavigationStartedCallback;
+            ActiveRecognizer.OnNavigationUpdatedEvent -= NavigationUpdatedCallback;
+            ActiveRecognizer.OnNavigationCompletedEvent -= NavigationCompletedCallback;
+            ActiveRecognizer.OnNavigationCanceledEvent -= NavigationCanceledCallback;
 
-            ActiveRecognizer.HoldStartedEvent -= HoldStartedCallback;
-            ActiveRecognizer.HoldCompletedEvent -= HoldCompletedCallback;
-            ActiveRecognizer.HoldCanceledEvent -= HoldCanceledCallback;
+            ActiveRecognizer.OnHoldStartedEvent -= HoldStartedCallback;
+            ActiveRecognizer.OnHoldCompletedEvent -= HoldCompletedCallback;
+            ActiveRecognizer.OnHoldCanceledEvent -= HoldCanceledCallback;
 
-            ActiveRecognizer.ManipulationStartedEvent -= ManipulationStartedCallback;
-            ActiveRecognizer.ManipulationUpdatedEvent -= ManipulationUpdatedCallback;
-            ActiveRecognizer.ManipulationCompletedEvent -= ManipulationCompletedCallback;
-            ActiveRecognizer.ManipulationCanceledEvent -= ManipulationCanceledCallback;
+            ActiveRecognizer.OnManipulationStartedEvent -= ManipulationStartedCallback;
+            ActiveRecognizer.OnManipulationUpdatedEvent -= ManipulationUpdatedCallback;
+            ActiveRecognizer.OnManipulationCompletedEvent -= ManipulationCompletedCallback;
+            ActiveRecognizer.OnManipulationCanceledEvent -= ManipulationCanceledCallback;
 
             ActiveRecognizer.CancelGestures();
 
@@ -326,18 +326,18 @@ namespace HUX.Interaction
         }
 
 
-		private AFocuser GetFocuserForSource(InteractionSourceKind source)
+		private AFocuser GetFocuserForSource(UnityEngine.XR.WSA.Input.InteractionSourceKind source)
 		{
 			AFocuser focuser = FocusManager.Instance != null ? FocusManager.Instance.GazeFocuser : null;
 			switch (source)
 			{
-				case InteractionSourceKind.Hand:
+				case UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand:
 				{
 					focuser = InputSourceFocuser.GetFocuserForInputSource(InputSources.Instance.hands);
 					break;
 				}
 
-				case InteractionSourceKind.Controller:
+				case UnityEngine.XR.WSA.Input.InteractionSourceKind.Controller:
 				{
 					focuser = InputSourceFocuser.GetFocuserForInputSource(InputSources.Instance.sixDOFRay);
 					break;
@@ -847,118 +847,296 @@ namespace HUX.Interaction
         #endregion
 
         #region Gesture Recognizer Callbacks
-        private void NavigationStartedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationStartedCallback(UnityEngine.XR.WSA.Input.NavigationStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                NavigationStartedEvent(focuser, relativePosition, ray);
-            }
-        }
+            AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 relativePosition = args.normalizedOffset;
+            Ray ray;
 
-        private void NavigationUpdatedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
-        {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                NavigationUpdatedEvent(focuser, relativePosition, ray);
-            }
-        }
-
-        private void NavigationCompletedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
-        {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                NavigationCompletedEvent(focuser, relativePosition, ray);
-            }
-        }
-
-        private void NavigationCanceledCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
-        {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                NavigationCanceledEvent(focuser, relativePosition, ray);
-            }
-        }
-
-        private void TappedCallback(InteractionSourceKind source, int tapCount, Ray ray)
-        {
-			AFocuser focuser = GetFocuserForSource(source);
-            if (focuser != null)
+            if (args.pose.pointer.TryGetRay(out ray))
             {
-                if (tapCount >= 2)
+                if (focuser != null)
                 {
-                    DoubleTappedEvent(focuser, ray);
+                    NavigationStartedEvent(focuser, relativePosition, ray);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+            }
+        }
+
+        private void NavigationUpdatedCallback(UnityEngine.XR.WSA.Input.NavigationUpdatedEventArgs args)
+        {
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 relativePosition = args.normalizedOffset;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetRay(out ray))
+            {
+                if (focuser != null)
+                {
+                    NavigationUpdatedEvent(focuser, relativePosition, ray);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+            }
+        }
+
+        private void NavigationCompletedCallback(UnityEngine.XR.WSA.Input.NavigationCompletedEventArgs args)
+        {
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 relativePosition = args.normalizedOffset;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetRay(out ray))
+            {
+                if (focuser != null)
+                {
+                    NavigationCompletedEvent(focuser, relativePosition, ray);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+            }
+        }
+
+        private void NavigationCanceledCallback(UnityEngine.XR.WSA.Input.NavigationCanceledEventArgs args)
+        {
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 relativePosition = args.normalizedOffset;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetRay(out ray))
+            {
+                if (focuser != null)
+                {
+                    NavigationCanceledEvent(focuser, relativePosition, ray);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+            }
+
+        }
+
+        private void TappedCallback(UnityEngine.XR.WSA.Input.TappedEventArgs args)
+        {
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        if (args.tapCount >= 2)
+                        {
+                            DoubleTappedEvent(focuser, ray);
+                        }
+                        else
+                        {
+                            TappedEvent(focuser, ray);
+                        }
+                    }
                 }
                 else
                 {
-                    TappedEvent(focuser, ray);
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
                 }
             }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
+            }
+
         }
 
-        private void HoldStartedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldStartedCallback(UnityEngine.XR.WSA.Input.HoldStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                HoldStartedEvent(focuser, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        HoldStartedEvent(focuser, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void HoldCompletedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCompletedCallback(UnityEngine.XR.WSA.Input.HoldCompletedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                HoldCompletedEvent(focuser, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        HoldCompletedEvent(focuser, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void HoldCanceledCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCanceledCallback(UnityEngine.XR.WSA.Input.HoldCanceledEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                HoldCanceledEvent(focuser, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        HoldCanceledEvent(focuser, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void ManipulationStartedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationStartedCallback(UnityEngine.XR.WSA.Input.ManipulationStartedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                ManipulationStartedEvent(focuser, position, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        ManipulationStartedEvent(focuser, position, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void ManipulationUpdatedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationUpdatedCallback(UnityEngine.XR.WSA.Input.ManipulationUpdatedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                ManipulationUpdatedEvent(focuser, position, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        ManipulationUpdatedEvent(focuser, position, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void ManipulationCompletedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCompletedCallback(UnityEngine.XR.WSA.Input.ManipulationCompletedEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                ManipulationCompletedEvent(focuser, position, ray);
+			AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        ManipulationCompletedEvent(focuser, position, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
-        private void ManipulationCanceledCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCanceledCallback(UnityEngine.XR.WSA.Input.ManipulationCanceledEventArgs args)
         {
-			AFocuser focuser = GetFocuserForSource(source);
-			if (focuser != null)
-			{
-                ManipulationCanceledEvent(focuser, position, ray);
+            AFocuser focuser = GetFocuserForSource(args.source.kind);
+            Vector3 position;
+            Ray ray;
+
+            if (args.pose.pointer.TryGetPosition(out position))
+            {
+                if (args.pose.pointer.TryGetRay(out ray))
+                {
+                    if (focuser != null)
+                    {
+                        ManipulationCanceledEvent(focuser, position, ray);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Failed to get pointer ray source ID: " + args.source.id);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Failed to get pointer position source ID: " + args.source.id);
             }
         }
 
