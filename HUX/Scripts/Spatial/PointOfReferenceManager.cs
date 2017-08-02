@@ -6,8 +6,6 @@ using UnityEngine;
 
 #if UNITY_WSA
 
-
-
 #endif
 
 using System.Collections;
@@ -61,10 +59,10 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
 #if UNITY_EDITOR
         m_LoadedAndPlaced = true;
 #else
-        WorldAnchorStore.GetAsync(StoreLoaded);
+        UnityEngine.XR.WSA.Persistence.WorldAnchorStore.GetAsync(StoreLoaded);
 #endif
-        
-		InputSources.Instance.hands.OnFingerPressed += OnFingerPressed;
+
+        InputSources.Instance.hands.OnFingerPressed += OnFingerPressed;
     }
     
     // Update is called once per frame

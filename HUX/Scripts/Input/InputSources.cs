@@ -30,7 +30,6 @@ public class InputSources
 	public InputSourceSixDOFRay sixDOFRay;
 	public InputSourceNetMouse netMouse;
 	public InputSourceNetGamepad netGamepad;
-	public InputSourceHidGamepad hidGamepad;
 	public InputSourceUnityGamepad unityGamepad;
 	public InputSourceKeyboard keyboard;
 	

@@ -187,10 +187,6 @@ public class InputSourceGamepad : InputSourceVirtual, ITargetingInputSource
 			{
 				SelectGamepadSource(inputSources.netGamepad);
 			}
-			else if (inputSources.hidGamepad.IsPresent())
-			{
-				SelectGamepadSource(inputSources.hidGamepad);
-			}
 			else if (inputSources.unityGamepad.IsPresent())
 			{
 				SelectGamepadSource(inputSources.unityGamepad);

@@ -16,7 +16,7 @@ public class TagDialog : MonoBehaviour {
     public void Update () {
         if ( Background != null && Text != null)
         {
-            MeshRenderer renderer = Text.GetCachedComponent<MeshRenderer>();
+            MeshRenderer renderer = Text.GetComponent<MeshRenderer>();
             Background.transform.localScale = Vector3.Scale(transform.lossyScale, renderer.bounds.size + Margin);
         }
     }

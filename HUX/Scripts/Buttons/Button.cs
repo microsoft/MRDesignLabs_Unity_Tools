@@ -370,7 +370,7 @@ namespace HUX.Buttons
         private void OnDrawGizmos()
         {
             // Simple visualization if Gazer is none - we could be in a level without the gazer spawned yet, or in editor.
-            Collider collider = this.GetCachedComponent<Collider>();
+            Collider collider = this.GetComponent<Collider>();
             if (collider != null)
             {
                 _gizmoIcon = UnityEditor.Selection.activeGameObject == this.gameObject ? _gizmoIconSelected : _gizmoIconDefault;
