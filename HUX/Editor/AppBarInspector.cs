@@ -37,6 +37,8 @@ namespace HUX
             }
 
             HUXEditorUtils.BeginSectionBox("App bar options");
+            appBar.HoverOffsetYScale = EditorGUILayout.Slider("Hover Offset (Y)", appBar.HoverOffsetYScale, -2f, 2f);
+            appBar.HoverOffsetZ = EditorGUILayout.Slider("Hover Offset (Z)", appBar.HoverOffsetZ, -2f, 2f);
             appBar.SquareButtonPrefab = (GameObject)EditorGUILayout.ObjectField("Button Prefab", appBar.SquareButtonPrefab, typeof(GameObject));
             GUI.color = (appBar.CustomButtonIconProfile == null) ? HUXEditorUtils.DisabledColor : HUXEditorUtils.DefaultColor;
             appBar.CustomButtonIconProfile = (ButtonIconProfile)EditorGUILayout.ObjectField("Custom Icon Profile", appBar.CustomButtonIconProfile, typeof(ButtonIconProfile));
@@ -46,7 +48,7 @@ namespace HUX
             if (appBar.SquareButtonPrefab == null) {
                 HUXEditorUtils.ErrorMessage("You must specify a button prefab");
                 HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(appBar);
+                HUXEditorUtils.SaveChanges(target);
                 return;
             }
 
@@ -54,7 +56,7 @@ namespace HUX
             if (icon == null) {
                 HUXEditorUtils.ErrorMessage("You must use a button prefab that has a CompoundButtonIcon component");
                 HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(appBar);
+                HUXEditorUtils.SaveChanges(target);
                 return;
             }
 
@@ -79,7 +81,7 @@ namespace HUX
                 if (profile == null) {
                     HUXEditorUtils.ErrorMessage("The button prefab does not specify an icon profile. Can't continue.");
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(appBar);
+                    HUXEditorUtils.SaveChanges(target);
                     return;
                 }
             }
@@ -128,7 +130,7 @@ namespace HUX
 
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(appBar);
+            HUXEditorUtils.SaveChanges(target);
         }
 
         private AppBar.ButtonTemplate DrawButtonEditor(AppBar.ButtonTemplate template, ButtonIconProfile profile, ref int numCustomButtons, string arrayName, int templateIndex) {
@@ -269,7 +271,6 @@ namespace HUX
 
             GUI.color = HUXEditorUtils.DefaultColor;
             HUXEditorUtils.SaveChanges(target);
-
             return drewButton;
         }
     }
