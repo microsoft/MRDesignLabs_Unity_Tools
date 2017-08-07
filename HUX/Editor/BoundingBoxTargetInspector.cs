@@ -4,7 +4,6 @@
 //
 using HUX.Interaction;
 using UnityEditor;
-using UnityEngine;
 
 namespace HUX
 {
@@ -23,6 +22,8 @@ namespace HUX
                 "Default",
                 BoundingBoxManipulate.OperationEnum.ScaleUniform | BoundingBoxManipulate.OperationEnum.RotateY | BoundingBoxManipulate.OperationEnum.Drag,
                 BoundingBoxManipulate.OperationEnum.Drag);
+
+            bbt.FlattenPreference = (BoundingBox.FlattenModeEnum)EditorGUILayout.EnumPopup("Flattening mode", bbt.FlattenPreference);
 
             bbt.ShowAppBar = EditorGUILayout.Toggle("Toolbar Display", bbt.ShowAppBar);
 

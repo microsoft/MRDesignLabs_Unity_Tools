@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
-using HUX.Buttons;
-using HUX.Focus;
 using HUX.Receivers;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +13,21 @@ namespace HUX.Interaction
     /// </summary>
     public class BoundingBox : InteractionReceiver
     {
+        public enum BoundsCalculationMethodEnum
+        {
+            MeshFilterBounds,   // Better for flattened objects
+            RendererBounds,     // Better for objects with non-mesh renderers
+        }
+
+        public enum FlattenModeEnum
+        {
+            DoNotFlatten,   // Always use XYZ axis
+            FlattenX,       // Flatten the X axis
+            FlattenY,       // Flatten the Y axis
+            FlattenZ,       // Flatten the Z axis
+            FlattenAuto,    // Flatten the smallest relative axis if it falls below threshold
+        }
+
         #region public
 
         /// <summary>
@@ -26,6 +39,23 @@ namespace HUX.Interaction
         /// Any renderers on this layer will be ignored when calculating object bounds
         /// </summary>
         public int IgnoreLayer = 2;//Ignore Raycast
+
+        /// <summary>
+        /// Flattening behavior setting
+        /// </summary>
+        public FlattenModeEnum FlattenPreference = FlattenModeEnum.FlattenAuto;
+
+        public BoundsCalculationMethodEnum BoundsCalculationMethod = BoundsCalculationMethodEnum.MeshFilterBounds;
+
+        /// <summary>
+        /// The relative % size of an axis must meet before being auto-flattened
+        /// </summary>
+        public float FlattenAxisThreshold = 0.025f;
+
+        /// <summary>
+        /// The relative % size of a flattened axis
+        /// </summary>
+        public float FlattenedAxisThickness = 0.01f;
 
         /// <summary>
         /// The target object being manipulated
@@ -51,6 +81,10 @@ namespace HUX.Interaction
                     }
                     target = value;
                 }
+
+                if (!isActiveAndEnabled)
+                    return;
+
                 if (target != null)
                 {
                     CreateTransforms();
@@ -85,6 +119,20 @@ namespace HUX.Interaction
             }
         }
 
+        /// <summary>
+        /// The current flattened axis, if any
+        /// </summary>
+        public virtual FlattenModeEnum FlattenedAxis
+        {
+            get
+            {
+                return flattenedAxis;
+            } protected set
+            {
+                flattenedAxis = value;
+            }
+        }
+
         public override void OnDisable()
         {
             base.OnDisable();
@@ -110,14 +158,29 @@ namespace HUX.Interaction
                 // Do this here to ensure continuous updates in editor
                 RefreshTargetBounds();
             }
+
+            /*if (target != null)
+            {
+                foreach (Vector3 point in boundsPoints)
+                {
+                    Gizmos.DrawSphere(target.transform.TransformPoint(point), 0.01f);
+                }
+            }*/
         }
         #endif
 
         protected void CreateTransforms() {
             // Create our transform helpers if they don't exist
             if (transformHelper == null) {
-                transformHelper = new GameObject("BoundingBoxTransformHelper").transform;
-                targetStandIn = new GameObject("TargetStandIn").transform;
+                transformHelper = transform.Find("BoundingBoxTransformHelper");
+                if (transformHelper == null)
+                    transformHelper = new GameObject("BoundingBoxTransformHelper").transform;
+
+                targetStandIn = transformHelper.Find("TargetStandIn");
+                if (targetStandIn == null)
+                    targetStandIn = new GameObject("TargetStandIn").transform;
+
+                transformHelper.parent = transform;
                 targetStandIn.parent = transformHelper;
             }
         }
@@ -142,17 +205,38 @@ namespace HUX.Interaction
             // Get the new target bounds
             boundsPoints.Clear();
 
-            Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
-            for(int i =0; i<renderers.Length; ++i)
+
+            switch (BoundsCalculationMethod)
             {
-                var rendererObj = renderers[i];
-                if(rendererObj.gameObject.layer == IgnoreLayer)
-                    continue;
+                case BoundsCalculationMethodEnum.RendererBounds:
+                default:
+                    Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+                    for (int i = 0; i < renderers.Length; ++i)
+                    {
+                        var rendererObj = renderers[i];
+                        if (rendererObj.gameObject.layer == IgnoreLayer)
+                            continue;
 
-                rendererObj.bounds.GetCornerPositionsFromRendererBounds(ref corners);
-                boundsPoints.AddRange(corners);
+                        rendererObj.bounds.GetCornerPositionsFromRendererBounds(ref corners);
+                        boundsPoints.AddRange(corners);
+                    }
+                    break;
+
+                case BoundsCalculationMethodEnum.MeshFilterBounds:
+                    MeshFilter[] meshFilters = target.GetComponentsInChildren<MeshFilter>();
+                    for (int i = 0; i < meshFilters.Length; i++)
+                    {
+                        var meshFilterObj = meshFilters[i];
+                        if (meshFilterObj.gameObject.layer == IgnoreLayer)
+                            continue;
+
+                        Bounds meshBounds = meshFilterObj.sharedMesh.bounds;
+                        meshBounds.GetCornerPositions(meshFilterObj.transform, ref corners);
+                        boundsPoints.AddRange(corners);
+                    }
+                    break;
             }
-
+            
             if (boundsPoints.Count > 0)
             {
                 // We now have a list of all points in world space
@@ -177,6 +261,51 @@ namespace HUX.Interaction
             // Store the local scale of the target bb
             targetBoundsLocalScale = localTargetBounds.size;
             targetBoundsLocalScale.Scale(target.transform.localScale);
+
+            // Find the maximum size of the new bounds
+            float maxAxisThickness = Mathf.Max(Mathf.Max(targetBoundsLocalScale.x, targetBoundsLocalScale.y), targetBoundsLocalScale.z);
+
+            // Now check our flatten behavior
+            FlattenModeEnum newFlattenedAxis = FlattenModeEnum.DoNotFlatten;
+            switch (FlattenPreference)
+            {
+                case FlattenModeEnum.DoNotFlatten:
+                    // Do nothing
+                    break;
+
+                case FlattenModeEnum.FlattenAuto:
+                    // Flattening order of preference - z, y, x
+                    if (Mathf.Abs(targetBoundsLocalScale.z / maxAxisThickness) < FlattenAxisThreshold) {
+                        newFlattenedAxis = FlattenModeEnum.FlattenZ;
+                        targetBoundsLocalScale.z = FlattenedAxisThickness * maxAxisThickness;
+                    }
+                    else if (Mathf.Abs(targetBoundsLocalScale.y / maxAxisThickness) < FlattenAxisThreshold) {
+                        newFlattenedAxis = FlattenModeEnum.FlattenY;
+                        targetBoundsLocalScale.y = FlattenedAxisThickness * maxAxisThickness;
+                    }
+                    else if (Mathf.Abs(targetBoundsLocalScale.x / maxAxisThickness) < FlattenAxisThreshold) {
+                        newFlattenedAxis = FlattenModeEnum.FlattenX;
+                        targetBoundsLocalScale.x = FlattenedAxisThickness * maxAxisThickness;
+                    }
+                    break;
+
+                case FlattenModeEnum.FlattenX:
+                    newFlattenedAxis = FlattenModeEnum.FlattenX;
+                    targetBoundsLocalScale.x = FlattenedAxisThickness * maxAxisThickness;
+                    break;
+
+                case FlattenModeEnum.FlattenY:
+                    newFlattenedAxis = FlattenModeEnum.FlattenY;
+                    targetBoundsLocalScale.y = FlattenedAxisThickness * maxAxisThickness;
+                    break;
+
+                case FlattenModeEnum.FlattenZ:
+                    newFlattenedAxis = FlattenModeEnum.FlattenZ;
+                    targetBoundsLocalScale.z = FlattenedAxisThickness * maxAxisThickness;
+                    break;
+            }
+
+            FlattenedAxis = newFlattenedAxis;
         }
 
         [SerializeField]
@@ -194,6 +323,8 @@ namespace HUX.Interaction
         protected Vector3[] corners = null;
         protected Bounds localTargetBounds = new Bounds();
         protected List<Vector3> boundsPoints = new List<Vector3>();
+
+        protected FlattenModeEnum flattenedAxis = FlattenModeEnum.DoNotFlatten;
 
         #endregion
     }

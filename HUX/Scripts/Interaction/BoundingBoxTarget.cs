@@ -30,6 +30,8 @@ namespace HUX.Interaction
         [HideInInspector]
         public BoundingBoxManipulate.OperationEnum PermittedOperations = BoundingBoxManipulate.OperationEnum.Drag | BoundingBoxManipulate.OperationEnum.ScaleUniform | BoundingBoxManipulate.OperationEnum.RotateY;
 
+        public BoundingBoxManipulate.FlattenModeEnum FlattenPreference = BoundingBox.FlattenModeEnum.FlattenAuto;
+
         /// <summary>
         /// Whether to show the manipulation display when the bounding box targets this object
         /// </summary>
@@ -92,6 +94,7 @@ namespace HUX.Interaction
             
             // Set the bounding box's target and permitted operations
             boundingBox.PermittedOperations = PermittedOperations;
+            boundingBox.FlattenPreference = FlattenPreference;
             boundingBox.Target = gameObject;
             
             if (ShowAppBar)
