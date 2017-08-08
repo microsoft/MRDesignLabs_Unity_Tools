@@ -15,7 +15,7 @@ namespace HUX.Interaction
     {
         public enum BoundsCalculationMethodEnum
         {
-            MeshFilterBounds,   // Better for flattened objects
+            MeshFilterBounds,   // Better for flattened objects - this mode also treats RectTransforms as quad meshes
             RendererBounds,     // Better for objects with non-mesh renderers
         }
 
@@ -234,6 +234,12 @@ namespace HUX.Interaction
                         meshBounds.GetCornerPositions(meshFilterObj.transform, ref corners);
                         boundsPoints.AddRange(corners);
                     }
+                    RectTransform[] rectTransforms = target.GetComponentsInChildren<RectTransform>();
+                    for (int i = 0; i < rectTransforms.Length; i++)
+                    {
+                        rectTransforms[i].GetWorldCorners(rectTransformCorners);
+                        boundsPoints.AddRange(rectTransformCorners);
+                    }
                     break;
             }
             
@@ -321,6 +327,7 @@ namespace HUX.Interaction
         protected Vector3 targetBoundsLocalScale = Vector3.zero;
 
         protected Vector3[] corners = null;
+        protected Vector3[] rectTransformCorners = new Vector3[4];
         protected Bounds localTargetBounds = new Bounds();
         protected List<Vector3> boundsPoints = new List<Vector3>();
 
