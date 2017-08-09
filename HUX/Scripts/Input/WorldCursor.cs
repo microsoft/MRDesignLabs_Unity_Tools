@@ -142,7 +142,7 @@ public class WorldCursor : MonoBehaviour
 
     public void SetCursorActive(bool active)
     {
-        if (active == cursorActive)
+        if (active == cursorActive || pointer == null)
         {
             return;
         }
