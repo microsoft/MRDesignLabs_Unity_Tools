@@ -20,6 +20,8 @@ namespace HUX
             bbm.Target = (GameObject)EditorGUILayout.ObjectField("Target", bbm.Target, typeof (GameObject), true);
             //bbm.ActiveHandle = (BoundingBoxHandle)EditorGUILayout.ObjectField("Active Handle", bbm.ActiveHandle, typeof(BoundingBoxHandle), true);
 
+            HUXEditorUtils.ArrayField(serializedObject, "Interactibles");
+
             HUXEditorUtils.BeginSectionBox("Settings");
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Bounds method", GUILayout.MaxWidth(100));

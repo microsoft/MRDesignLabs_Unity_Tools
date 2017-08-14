@@ -431,6 +431,18 @@ namespace HUX
             EndSectionBox();
         }
 
+        public static void ArrayField (SerializedObject serializedObject, string fieldName)
+        {
+            SerializedProperty tps = serializedObject.FindProperty(fieldName);
+            if (tps != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(tps, true);
+                if (EditorGUI.EndChangeCheck())
+                    serializedObject.ApplyModifiedProperties();
+            }
+        }
+
         public static void BeginSectionBox(string label)
         {
             GUI.color = DefaultColor;

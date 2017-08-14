@@ -287,6 +287,10 @@ namespace HUX.Interaction
         {
             base.OnEnable();
             manipulatingNow = false;
+            foreach (GameObject handle in Interactibles)
+            {
+                handle.SetActive(false);
+            }
         }
 
         #endregion
