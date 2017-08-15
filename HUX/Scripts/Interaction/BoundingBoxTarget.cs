@@ -32,6 +32,8 @@ namespace HUX.Interaction
 
         public BoundingBoxManipulate.FlattenModeEnum FlattenPreference = BoundingBox.FlattenModeEnum.FlattenAuto;
 
+        public BoundingBox.BoundsCalculationMethodEnum BoundsCalculationMethod = BoundingBox.BoundsCalculationMethodEnum.RendererBounds;
+
         /// <summary>
         /// Whether to show the manipulation display when the bounding box targets this object
         /// </summary>
@@ -96,6 +98,7 @@ namespace HUX.Interaction
             boundingBox.PermittedOperations = PermittedOperations;
             boundingBox.FlattenPreference = FlattenPreference;
             boundingBox.Target = gameObject;
+            boundingBox.BoundsMethodOverride = BoundsCalculationMethod;
             
             if (ShowAppBar)
             {

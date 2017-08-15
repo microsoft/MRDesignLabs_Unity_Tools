@@ -436,7 +436,7 @@ namespace HUX.Buttons
 
             if (UnityEditor.Selection.activeGameObject == gameObject)
             {
-                BoundingBoxHandle[] bbhs = transform.parent.GetComponentsInChildren<BoundingBoxHandle>();
+                BoundingBoxHandle[] bbhs = transform.parent.GetComponentsInChildren<BoundingBoxHandle>(true);
                 if (HandleTypeFlattened != HandleTypeFlattenedEnum.None)
                 {
                     HandleType = HandleTypeEnum.None;

@@ -17,6 +17,7 @@ namespace HUX.Interaction
         {
             MeshFilterBounds,   // Better for flattened objects - this mode also treats RectTransforms as quad meshes
             RendererBounds,     // Better for objects with non-mesh renderers
+            Default,            // Use the default method (RendererBounds)
         }
 
         public enum FlattenModeEnum

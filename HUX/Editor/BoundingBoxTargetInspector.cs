@@ -16,6 +16,22 @@ namespace HUX
 
             HUXEditorUtils.DrawFilterTagField(serializedObject, "TagOnSelected");
             HUXEditorUtils.DrawFilterTagField(serializedObject, "TagOnDeselected");
+
+            /*EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Bounds method", GUILayout.MaxWidth(100));
+            bbt.BoundsCalculationMethod = (BoundingBox.BoundsCalculationMethodEnum)EditorGUILayout.EnumPopup(bbt.BoundsCalculationMethod, GUILayout.MaxWidth(155));
+            switch (bbt.BoundsCalculationMethod)
+            {
+                case BoundingBox.BoundsCalculationMethodEnum.MeshFilterBounds:
+                    HUXEditorUtils.DrawSubtleMiniLabel("Uses all MeshFilters to calculate bounds. This setting is more accurate (especially for flat objects), but will only calculate bounds for mesh-based objects.");
+                    break;
+
+                case BoundingBox.BoundsCalculationMethodEnum.RendererBounds:
+                    HUXEditorUtils.DrawSubtleMiniLabel("Uses all Renderers to calculate bounds. This setting is less accurate, but can calculate bounds for objects like particle systems.");
+                    break;
+            }
+            EditorGUILayout.EndHorizontal();*/
+
             bbt.PermittedOperations = (BoundingBoxManipulate.OperationEnum) HUXEditorUtils.EnumCheckboxField<BoundingBoxManipulate.OperationEnum>(
                 "Permitted Operations",
                 bbt.PermittedOperations,

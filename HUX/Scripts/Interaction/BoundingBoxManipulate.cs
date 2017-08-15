@@ -104,6 +104,7 @@ namespace HUX.Interaction
             }
             set
             {
+                RefreshActiveHandles();
                 SetHandleByOperation(value);
             }
         }
@@ -124,6 +125,15 @@ namespace HUX.Interaction
                     // Make sure our active handle is still legitmiate
                     SetHandleByOperation(CurrentOperation);
                 }
+            }
+        }
+
+        public BoundsCalculationMethodEnum BoundsMethodOverride
+        {
+            set
+            {
+                if (target != null && value != BoundsCalculationMethodEnum.Default)
+                    boundsMethodOverride = value;
             }
         }
 
@@ -195,6 +205,7 @@ namespace HUX.Interaction
                     }
                     target = value;
                     // Reset active handle to drag
+                    RefreshActiveHandles();
                     SetHandleByOperation(OperationEnum.Drag);
                     ManipulatingNow = false;
                 }
@@ -208,6 +219,7 @@ namespace HUX.Interaction
                     RefreshTargetBounds();
                 } else
                 {
+                    boundsMethodOverride = BoundsCalculationMethodEnum.Default;
                     ActiveHandle = null;
                 }
             }
@@ -535,6 +547,7 @@ namespace HUX.Interaction
             
             // Set up our transforms and gestures based on the operation we're performing
             OperationEnum operation = GetBoundingBoxOperationFromHandleType(ActiveHandle.HandleType, ActiveHandle.HandleTypeFlattened);
+            Debug.Log("Operation on start manipulating is " + operation);
             switch (operation)
             {
                 case OperationEnum.ScaleUniform:
@@ -619,16 +632,14 @@ namespace HUX.Interaction
                     break;
 
                 case OperationEnum.Drag:
+                    Debug.Log("Drag!");
                     foreach (GameObject obj in Interactibles)
                     {
-                        if (obj.activeSelf)
+                        BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
+                        if (h.HandleType == BoundingBoxHandle.HandleTypeEnum.Drag)
                         {
-                            BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
-                            if (h.HandleType == BoundingBoxHandle.HandleTypeEnum.Drag)
-                            {
-                                ActiveHandle = h;
-                                break;
-                            }
+                            ActiveHandle = h;
+                            break;
                         }
                     }
                     break;
@@ -636,15 +647,12 @@ namespace HUX.Interaction
                 default:
                     foreach (GameObject obj in Interactibles)
                     {
-                        if (obj.activeSelf)
+                        BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
+                        OperationEnum handleOp = GetBoundingBoxOperationFromHandleType(h.HandleType, h.HandleTypeFlattened);
+                        if (handleOp == operation)
                         {
-                            BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
-                            OperationEnum handleOp = GetBoundingBoxOperationFromHandleType(h.HandleType, h.HandleTypeFlattened);
-                            if (handleOp == operation)
-                            {
-                                ActiveHandle = h;
-                                break;
-                            }
+                            ActiveHandle = h;
+                            break;
                         }
                     }
                     break;
@@ -657,31 +665,40 @@ namespace HUX.Interaction
             foreach (GameObject handleGo in Interactibles)
             {
                 BoundingBoxHandle handle = handleGo.GetComponent<BoundingBoxHandle>();
-                OperationEnum handleOperation = GetBoundingBoxOperationFromHandleType(handle.HandleType, handle.HandleTypeFlattened);
-                bool operationPermitted = (handleOperation & permittedOperations) != 0;
-                bool flattenedTypePermitted =
-                    (FlattenedAxis == FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened == BoundingBoxHandle.HandleTypeFlattenedEnum.None) ||
-                    (FlattenedAxis != FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened != BoundingBoxHandle.HandleTypeFlattenedEnum.None);
 
-                handleGo.SetActive(operationPermitted & flattenedTypePermitted);
-
-                switch (FlattenedAxis)
+                if (handle.HandleType == BoundingBoxHandle.HandleTypeEnum.Drag)
                 {
-                    case FlattenModeEnum.DoNotFlatten:
-                    default:
-                        break;
+                    // Drag is a special case - it's active when flattened and when not
+                    handle.gameObject.SetActive((permittedOperations & OperationEnum.Drag) != 0);
+                }
+                else
+                {
+                    OperationEnum handleOperation = GetBoundingBoxOperationFromHandleType(handle.HandleType, handle.HandleTypeFlattened);
+                    bool operationPermitted = (handleOperation & permittedOperations) != 0;
+                    bool flattenedTypePermitted =
+                        (FlattenedAxis == FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened == BoundingBoxHandle.HandleTypeFlattenedEnum.None) ||
+                        (FlattenedAxis != FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened != BoundingBoxHandle.HandleTypeFlattenedEnum.None);
 
-                    case FlattenModeEnum.FlattenX:
-                        handle.RefreshFlattenedPosition(BoundsExtentions.Axis.X);
-                        break;
+                    handleGo.SetActive(operationPermitted & flattenedTypePermitted);
 
-                    case FlattenModeEnum.FlattenY:
-                        handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Y);
-                        break;
+                    switch (FlattenedAxis)
+                    {
+                        case FlattenModeEnum.DoNotFlatten:
+                        default:
+                            break;
 
-                    case FlattenModeEnum.FlattenZ:
-                        handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Z);
-                        break;
+                        case FlattenModeEnum.FlattenX:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.X);
+                            break;
+
+                        case FlattenModeEnum.FlattenY:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Y);
+                            break;
+
+                        case FlattenModeEnum.FlattenZ:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Z);
+                            break;
+                    }
                 }
             }
         }
@@ -716,6 +733,11 @@ namespace HUX.Interaction
 
         [SerializeField]
         private OperationEnum permittedOperations = OperationEnum.Drag | OperationEnum.RotateY | OperationEnum.ScaleUniform;
+
+        /// <summary>
+        /// Can be set to override the default bounds calculation method
+        /// </summary>
+        private BoundsCalculationMethodEnum boundsMethodOverride = BoundsCalculationMethodEnum.Default;
 
         private Vector3 lastNavigatePos = Vector3.zero;
         private Vector3 navigateVelocity = Vector3.zero;
