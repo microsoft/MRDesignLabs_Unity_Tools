@@ -136,9 +136,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b802fc7c5f994e4192e19b2f96ba11b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MaxButtons: 10
   ButtonPrefab: {fileID: 1820333246347296, guid: a14a59423f8250d449e336817f140c00,
     type: 2}
-  TitleText: {fileID: 102215584945625844}
   buttonParent: {fileID: 0}
   buttons:
   - Name: 
@@ -191,6 +191,7 @@ MonoBehaviour:
     Target: {fileID: 0}
     Text: Text
     Icon: E700
+  TitleText: {fileID: 102215584945625844}
   parentCollection: {fileID: 114436451913679716}
 --- !u!114 &114436451913679716
 MonoBehaviour:
@@ -208,6 +209,7 @@ MonoBehaviour:
   SortType: 0
   OrientType: 1
   LayoutType: 1
+  IgnoreInactiveTransforms: 1
   Radius: 2
   Rows: 1
   CellWidth: 0.5
