@@ -2,9 +2,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
-using UnityEngine;
-using System;
 using HUX.Utility;
+using UnityEngine;
 
 namespace HUX.Interaction
 {
@@ -32,25 +31,42 @@ namespace HUX.Interaction
         /// <summary>
         /// Returns the spawned and active bounding box
         /// </summary>
-        public BoundingBoxManipulate ActiveBoundingBox { get { return m_boundingBox; } }
+        public BoundingBoxManipulate ActiveBoundingBox {
+            get {
+                if (m_boundingBox == null)
+                {
+                    // First look in the scene to see if the user has instantiated a bounding box
+                    m_boundingBox = GameObject.FindObjectOfType<BoundingBoxManipulate>();
+                    if (m_boundingBox == null)
+                    {
+                        // Spawn in the bounding box and assign internally
+                        GameObject boundBoxGO = Instantiate(BoundingBoxPrefab) as GameObject;
+                        m_boundingBox = boundBoxGO.GetComponent<BoundingBoxManipulate>();
+                    }
+                }
+                return m_boundingBox;
+            }
+        }
 
         /// <summary>
         /// Returns the current active app bar
         /// </summary>
-        public AppBar ActiveAppBar { get { return m_appBar; } }
+        public AppBar ActiveAppBar {
+            get {
+                if (m_appBar == null)
+                {
+                    // First look in the scene to see if the user has instantiated an app bar
+                    m_appBar = GameObject.FindObjectOfType<AppBar>();
+                    if (m_appBar == null)
+                    {
+                        // Spawn in the app bar and assign internally
+                        GameObject appBarGO = Instantiate(AppBarPrefab) as GameObject;
+                        m_appBar = appBarGO.GetComponent<AppBar>();
 
-        /// <summary>
-        /// On Start spawn in the active bounding box and app bar for manipulation
-        /// </summary>
-        protected void Start()
-        {
-            // Spawn in the bounding box and assign internally
-            GameObject boundBoxGO = Instantiate(BoundingBoxPrefab) as GameObject;
-            m_boundingBox = boundBoxGO.GetComponent<BoundingBoxManipulate>();
-
-            // Spawn in the app bar and assign internally
-            GameObject appBarGO = Instantiate(AppBarPrefab) as GameObject;
-            m_appBar = appBarGO.GetComponent<AppBar>();
+                    }
+                }
+                return m_appBar;
+            }
         }
     }
 }
