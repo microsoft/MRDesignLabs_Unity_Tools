@@ -27,6 +27,22 @@ namespace HUX
                 UnityEngine.VR.WSA.Input.GestureSettings.NavigationX | 
                 UnityEngine.VR.WSA.Input.GestureSettings.NavigationY);
 
+            EditorGUILayout.BeginHorizontal();
+            interactionManager.SendTapToGlobalReceiver = EditorGUILayout.Toggle("Send Tap to GlobalGestureReceiver", interactionManager.SendTapToGlobalReceiver);
+            EditorGUILayout.EndHorizontal();
+            if (interactionManager.SendTapToGlobalReceiver && (interactionManager.RecognizableGesures & UnityEngine.VR.WSA.Input.GestureSettings.Tap) == 0)
+                interactionManager.SendTapToGlobalReceiver = false;
+
+            EditorGUILayout.BeginHorizontal();
+            interactionManager.SendDoubleTapToGlobalReceiver = EditorGUILayout.Toggle("Send Double Tap to GlobalGestureReceiver", interactionManager.SendDoubleTapToGlobalReceiver);
+            EditorGUILayout.EndHorizontal();
+            if (interactionManager.SendDoubleTapToGlobalReceiver && (interactionManager.RecognizableGesures & UnityEngine.VR.WSA.Input.GestureSettings.DoubleTap) == 0)
+                interactionManager.SendDoubleTapToGlobalReceiver = false;
+
+            EditorGUILayout.BeginHorizontal();
+            interactionManager.GlobalGestureReceiver = (GameObject)EditorGUILayout.ObjectField("Global Gesture Receiver", interactionManager.GlobalGestureReceiver, typeof(GameObject), true);
+            EditorGUILayout.EndHorizontal();
+
             HUXEditorUtils.SaveChanges(target);
         }
     }

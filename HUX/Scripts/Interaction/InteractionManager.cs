@@ -62,6 +62,21 @@ namespace HUX.Interaction
         public GestureSettings RecognizableGesures = GestureSettings.Tap | GestureSettings.DoubleTap | GestureSettings.Hold | GestureSettings.NavigationX | GestureSettings.NavigationY;
 
         /// <summary>
+        /// GameObject that gestures events can optionally be sent to in addition to the regular interaction path
+        /// </summary>
+        public GameObject GlobalGestureReceiver;
+
+        /// <summary>
+        /// Whether to send OnTapped event to the GlobalGestureReceiver GameObject 
+        /// </summary>
+        public bool SendTapToGlobalReceiver = false;
+
+        /// <summary>
+        /// Whether to send OnDoubleTapped event to the GlobalGestureReceiver GameObject 
+        /// </summary>
+        public bool SendDoubleTapToGlobalReceiver = false;
+
+        /// <summary>
         /// Events that trigger manipulation or navigation is done on the specified object.
         /// </summary>
         public static event Action<GameObject, InteractionEventArgs> OnNavigationStarted;
@@ -538,6 +553,11 @@ namespace HUX.Interaction
                     focusObject.SendMessage("Tapped", eventArgs, SendMessageOptions.DontRequireReceiver);
                 }
 
+                if (SendTapToGlobalReceiver)
+                {
+                    SendEvent(OnTapped, GlobalGestureReceiver, eventArgs);
+                }
+
                 SendEvent(OnTapped, focusObject, eventArgs);
 
                 if (focuser.UIInteractibleFocus != null)
@@ -575,6 +595,11 @@ namespace HUX.Interaction
                 if (focusObject != null)
                 {
                     focusObject.SendMessage("DoubleTapped", eventArgs, SendMessageOptions.DontRequireReceiver);
+                }
+
+                if (SendDoubleTapToGlobalReceiver)
+                {
+                    SendEvent(OnDoubleTapped, GlobalGestureReceiver, eventArgs);
                 }
 
                 SendEvent(OnDoubleTapped, focusObject, eventArgs);
