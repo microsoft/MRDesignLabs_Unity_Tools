@@ -27,7 +27,7 @@ namespace HUX
                 UnityEngine.VR.WSA.Input.GestureSettings.NavigationX | 
                 UnityEngine.VR.WSA.Input.GestureSettings.NavigationY);
 
-            HUXEditorUtils.SaveChanges(target);
+           HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

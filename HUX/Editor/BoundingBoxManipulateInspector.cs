@@ -93,7 +93,7 @@ namespace HUX
                 bbm.ManipulatingNow = EditorGUILayout.Toggle("Manipulating Now", bbm.ManipulatingNow);
             }
 
-            HUXEditorUtils.SaveChanges(bbm);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

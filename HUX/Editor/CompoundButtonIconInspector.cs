@@ -24,7 +24,7 @@ namespace HUX
             iconButton.DisableIcon = EditorGUILayout.Toggle("Disable icon", iconButton.DisableIcon);
             if (iconButton.DisableIcon)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -33,7 +33,7 @@ namespace HUX
 
             if (iconButton.Profile == null)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -46,7 +46,7 @@ namespace HUX
                 {
                     HUXEditorUtils.ErrorMessage("You must specify an icon renderer", null);
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(target);
+                   HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
 
@@ -54,7 +54,7 @@ namespace HUX
                 {
                     HUXEditorUtils.ErrorMessage("You must specify an icon material in the profile", null);
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(target);
+                   HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
 
@@ -62,7 +62,7 @@ namespace HUX
                 {
                     HUXEditorUtils.ErrorMessage("You must specify an icon mesh in the profile", null);
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(target);
+                    HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
                 // Icon profiles provide their own fields for the icon name
@@ -88,7 +88,7 @@ namespace HUX
                     ClickToOpen);
             }*/
 
-            HUXEditorUtils.SaveChanges(iconButton, iconButton.Profile);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
             serializedObject.ApplyModifiedProperties();
         }
 

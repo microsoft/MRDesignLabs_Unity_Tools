@@ -120,7 +120,7 @@ namespace HUX
             cb.MainRenderer = HUXEditorUtils.DropDownComponentField<MeshRenderer>("Main renderer", cb.MainRenderer, cb.transform);
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(cb);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

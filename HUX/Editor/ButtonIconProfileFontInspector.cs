@@ -98,7 +98,7 @@ namespace HUX
 
             HUXEditorUtils.EndProfileBox();
 
-            HUXEditorUtils.SaveChanges(iconProfile);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         private void SelectFontAsset()

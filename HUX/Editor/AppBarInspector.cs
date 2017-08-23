@@ -48,7 +48,7 @@ namespace HUX
             if (appBar.SquareButtonPrefab == null) {
                 HUXEditorUtils.ErrorMessage("You must specify a button prefab");
                 HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
+                HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace HUX
             if (icon == null) {
                 HUXEditorUtils.ErrorMessage("You must use a button prefab that has a CompoundButtonIcon component");
                 HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
+                HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace HUX
                 if (profile == null) {
                     HUXEditorUtils.ErrorMessage("The button prefab does not specify an icon profile. Can't continue.");
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(target);
+                    HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
             }
@@ -130,7 +130,7 @@ namespace HUX
 
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(target);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         private AppBar.ButtonTemplate DrawButtonEditor(AppBar.ButtonTemplate template, ButtonIconProfile profile, ref int numCustomButtons, string arrayName, int templateIndex) {
@@ -182,7 +182,7 @@ namespace HUX
             }*/
 
             HUXEditorUtils.EndSectionBox();
-            HUXEditorUtils.SaveChanges(target);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
             return template;
         }
 
@@ -270,7 +270,7 @@ namespace HUX
             }
 
             GUI.color = HUXEditorUtils.DefaultColor;
-            HUXEditorUtils.SaveChanges(target);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
             return drewButton;
         }
     }

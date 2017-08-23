@@ -106,7 +106,7 @@ namespace HUX
 
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(menu);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         private void AddCollection ()

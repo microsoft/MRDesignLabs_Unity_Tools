@@ -30,7 +30,7 @@ namespace HUX
             }
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(target);
+           HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

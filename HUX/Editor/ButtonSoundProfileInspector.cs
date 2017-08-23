@@ -28,7 +28,7 @@ namespace HUX
 
             HUXEditorUtils.EndProfileBox();
 
-            HUXEditorUtils.SaveChanges(this);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         protected void DrawClipEditor(ref AudioClip clip, ref float volume, string label)

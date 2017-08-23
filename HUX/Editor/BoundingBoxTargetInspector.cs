@@ -44,7 +44,7 @@ namespace HUX
             bbt.ShowAppBar = EditorGUILayout.Toggle("Toolbar Display", bbt.ShowAppBar);
 
 
-            HUXEditorUtils.SaveChanges(bbt);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

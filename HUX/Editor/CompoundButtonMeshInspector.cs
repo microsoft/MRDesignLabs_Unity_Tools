@@ -28,7 +28,7 @@ namespace HUX
 
             if (meshButton.Profile == null)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -91,7 +91,7 @@ namespace HUX
             // Draw the profile
             HUXEditorUtils.DrawProfileInspector(meshButton.Profile, meshButton);
 
-            HUXEditorUtils.SaveChanges(target, meshButton.Profile);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
             serializedObject.ApplyModifiedProperties();
         }
     }

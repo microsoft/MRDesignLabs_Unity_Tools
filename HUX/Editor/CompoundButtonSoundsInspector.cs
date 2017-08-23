@@ -28,13 +28,13 @@ namespace HUX
 
             if (soundButton.Profile == null)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
             HUXEditorUtils.DrawProfileInspector(soundButton.Profile, soundButton);
 
-            HUXEditorUtils.SaveChanges(target, soundButton.Profile);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
             serializedObject.ApplyModifiedProperties();
         }
     }

@@ -70,7 +70,7 @@ namespace HUX
             }
             HUXEditorUtils.EndSubSectionBox();         
 
-            HUXEditorUtils.SaveChanges(bbm);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

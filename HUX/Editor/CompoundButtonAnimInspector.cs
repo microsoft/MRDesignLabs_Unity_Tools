@@ -26,7 +26,7 @@ namespace HUX
                 {
                     GUI.color = HUXEditorUtils.ErrorColor;
                     EditorGUILayout.LabelField("You must chooes a target animator.");
-                    HUXEditorUtils.SaveChanges(target);
+                   HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
 
                 }
@@ -40,7 +40,7 @@ namespace HUX
 
             if (!animator.isInitialized)
             {
-                HUXEditorUtils.SaveChanges(target);
+                HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace HUX
             {
                 //GUI.color = HUX.Editor.EditorStyles.ColorWarning;
                 EditorGUILayout.LabelField("(Gameobject must be active to view animation actions)");
-                HUXEditorUtils.SaveChanges(target);
+                HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -101,7 +101,7 @@ namespace HUX
             }
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(target);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         CompoundButtonAnim.AnimatorControllerAction DrawAnimActionEditor (CompoundButtonAnim.AnimatorControllerAction action, AnimatorControllerParameter [] animParams)
