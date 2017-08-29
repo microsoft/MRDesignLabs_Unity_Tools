@@ -1,8 +1,9 @@
-﻿//
+//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ public class StartupChecks
     static float launchDelay = 5f;
     static float checkInterval = 60f;
     static float lastCheck = 0f;
+    static float linearIconSize = 0.002f;
     static bool overridePrefs = false;
 
     static StartupChecks()
@@ -45,6 +47,7 @@ public class StartupChecks
     public static void ForceCheck()
     {
         DoCheck();
+        SetGizmoHandleSize();
     }
 
     static void Update()
@@ -62,6 +65,7 @@ public class StartupChecks
             return;
 
         DoCheck();
+        SetGizmoHandleSize();
 
     }
 
@@ -150,5 +154,23 @@ public class StartupChecks
             window.minSize = new Vector2(425, 450);
         }
 
+    }
+
+    static void SetGizmoHandleSize()
+    {
+        Debug.Log("Setting gizmo handle size to " + linearIconSize + " in StartupCheck.cs");
+        System.Type utilityType = typeof(Editor).Assembly.GetTypes().Where(t => t.Name == "AnnotationUtility").FirstOrDefault();
+        if (utilityType == null)
+        {
+            Debug.Log("Couldn't find AnnotationUtility in Editor class, not setting icon size.");
+            return;
+        }
+        System.Reflection.PropertyInfo iconSize = utilityType.GetProperty("iconSize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        if (iconSize == null)
+        {
+            Debug.Log("Couldn't find IconSize field in AnnotationUtility class, not setting icon size.");
+            return;
+        }
+        iconSize.SetValue(null, linearIconSize, null);
     }
 }
