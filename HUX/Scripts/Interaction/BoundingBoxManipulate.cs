@@ -29,6 +29,22 @@ namespace HUX.Interaction
 
         #region public
 
+        public virtual bool HasFocus
+        {
+            get
+            {
+                return hasFocus;
+            }
+        }
+
+        public virtual float LastFocusExit
+        {
+            get
+            {
+                return lastFocusExit;
+            }
+        }
+
         /// <summary>
         /// Makes bounding box manipulatable by user
         /// </summary>
@@ -310,19 +326,17 @@ namespace HUX.Interaction
         #region manipulation events
         protected override void OnFocusEnter(GameObject obj, FocusArgs args)
         {
-            if (!ManipulatingNow)
-            {
-                //TODO show handle mesh
-            }
+            hasFocus = true;
+            lastFocusExit = Mathf.NegativeInfinity;
+
             base.OnFocusEnter(obj, args);
         }
 
         protected override void OnFocusExit(GameObject obj, FocusArgs args)
         {
-            if (!ManipulatingNow)
-            {
-                //TODO hide handle mesh
-            }
+            hasFocus = false;
+            lastFocusExit = Time.time;
+
             base.OnFocusExit(obj, args);
         }
 
@@ -632,7 +646,6 @@ namespace HUX.Interaction
                     break;
 
                 case OperationEnum.Drag:
-                    Debug.Log("Drag!");
                     foreach (GameObject obj in Interactibles)
                     {
                         BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
@@ -745,6 +758,9 @@ namespace HUX.Interaction
         private Vector3 smoothVelocity = Vector3.zero;
         private Vector3 adjustedScaleTarget = Vector3.one;
         private Vector3 targetPosition = Vector3.zero;
+
+        protected bool hasFocus;
+        protected float lastFocusExit = Mathf.NegativeInfinity;
 
         /// <summary>
         /// A vector orthogonal to the rotation axis.

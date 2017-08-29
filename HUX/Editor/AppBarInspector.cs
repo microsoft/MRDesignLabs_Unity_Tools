@@ -37,6 +37,12 @@ namespace HUX
             }
 
             HUXEditorUtils.BeginSectionBox("App bar options");
+            appBar.Timeout = EditorGUILayout.Toggle("Timeout", appBar.Timeout);
+            if (appBar.Timeout)
+            {
+                HUXEditorUtils.DrawSubtleMiniLabel("App bar will automatically hide itself and disable the bounding box if neither receives focus for " + appBar.TimeoutInterval.ToString () + " seconds.");
+                appBar.TimeoutInterval = EditorGUILayout.Slider("Timeout interval", appBar.TimeoutInterval, 0.5f, 60f);
+            }
             appBar.HoverOffsetYScale = EditorGUILayout.Slider("Hover Offset (Y)", appBar.HoverOffsetYScale, -2f, 2f);
             appBar.HoverOffsetZ = EditorGUILayout.Slider("Hover Offset (Z)", appBar.HoverOffsetZ, -2f, 2f);
             appBar.SquareButtonPrefab = (GameObject)EditorGUILayout.ObjectField("Button Prefab", appBar.SquareButtonPrefab, typeof(GameObject));

@@ -3,6 +3,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
 using HUX.Buttons;
+using HUX.Focus;
 using HUX.Receivers;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,16 @@ namespace HUX.Interaction
         /// How many custom buttons can be added to the toolbar
         /// </summary>
         public const int MaxCustomButtons = 5;
+
+        /// <summary>
+        /// Number of seconds to wait until app bar disappears
+        /// </summary>
+        public float TimeoutInterval = 10f;
+
+        /// <summary>
+        /// Whether to disappear after not receiving gaze for TimeoutInterval
+        /// </summary>
+        public bool Timeout = false;
 
         /// <summary>
         /// Where to display the app bar on the y axis
@@ -86,6 +97,7 @@ namespace HUX.Interaction
             Default,
             Manipulation,
             Hidden,
+            Invisible,
         }
 
         public BoundingBoxManipulate BoundingBox {
@@ -161,6 +173,8 @@ namespace HUX.Interaction
             }
             FollowBoundingBox(false);
             lastTimeTapped = Time.time + coolDownTime;
+            lastFocusExit = Mathf.NegativeInfinity;
+            hasFocus = true;
         }
 
         public void Start() {
@@ -176,11 +190,26 @@ namespace HUX.Interaction
             }
         }
 
+        protected override void OnFocusExit(GameObject obj, FocusArgs args)
+        {
+            base.OnFocusExit(obj, args);
+            hasFocus = false;
+            lastFocusExit = Time.time;
+        }
+
+        protected override void OnFocusEnter(GameObject obj, FocusArgs args)
+        {
+            base.OnFocusEnter(obj, args);
+            hasFocus = true;
+            lastFocusExit = Mathf.NegativeInfinity;
+        }
+
         protected override void OnTapped(GameObject obj, InteractionManager.InteractionEventArgs eventArgs) {
             if (Time.time < lastTimeTapped + coolDownTime)
                 return;
 
             lastTimeTapped = Time.time;
+            lastFocusExit = Time.time;
 
             base.OnTapped(obj, eventArgs);
 
@@ -315,7 +344,7 @@ namespace HUX.Interaction
 
         private void Update() {
             FollowBoundingBox(true);
-            
+
             switch (State) {
                 case AppBarStateEnum.Default:
                 default:
@@ -335,6 +364,24 @@ namespace HUX.Interaction
                     if (boundingBox != null)
                         boundingBox.AcceptInput = true;
                     break;
+
+                case AppBarStateEnum.Invisible:
+                    targetBarSize = new Vector3(numHiddenButtons, 1f, 1f);
+                    if (boundingBox != null)
+                        boundingBox.gameObject.SetActive(false);
+                    gameObject.SetActive(false);
+                    break;
+            }
+
+            if (Timeout)
+            {
+                // If we're not hidden, and we don't have focus, and the bounding box doesn't have focus
+                if (State != AppBarStateEnum.Invisible && !hasFocus && (boundingBox != null && !boundingBox.HasFocus))
+                {
+                    // Use the latest focus exit to time out
+                    if (Time.time > Mathf.Max(lastFocusExit, (boundingBox != null) ? 0f : boundingBox.LastFocusExit) + TimeoutInterval)
+                        State = AppBarStateEnum.Invisible;
+                }
             }
 
             backgroundBar.transform.localScale = Vector3.Lerp(backgroundBar.transform.localScale, targetBarSize, 0.5f);
@@ -384,6 +431,8 @@ namespace HUX.Interaction
         private int numDefaultButtons;
         private int numHiddenButtons;
         private int numManipulationButtons;
+        private float lastFocusExit = 0f;
+        private bool hasFocus = false;
 
         /// <summary>
         /// Generates a template for a default button based on type
