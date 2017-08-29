@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
@@ -77,7 +77,7 @@ namespace HUX
                     Component[] accompanyingComponents = interactibleObject.GetComponents<Component>();
                     for (int j = 0; j < accompanyingComponents.Length; j++)
                     {
-                        if (accompanyingComponents[j] == interactibleObject)
+                        if (accompanyingComponents[j] == interactibleObject || accompanyingComponents[j] == null)
                             continue;
 
                         foreach (FieldInfo field in accompanyingComponents[j].GetType().GetFields())
@@ -185,7 +185,7 @@ namespace HUX
                     Component[] accompanyingComponents = interactibleObject.GetComponents<Component>();
                     for (int j = 0; j < accompanyingComponents.Length; j++)
                     {
-                        if (accompanyingComponents[j] == interactibleObject)
+                        if (accompanyingComponents[j] == interactibleObject || accompanyingComponents[j] == null)
                             continue;
 
                         foreach (FieldInfo field in accompanyingComponents[j].GetType().GetFields())
