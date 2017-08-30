@@ -30,6 +30,10 @@ namespace HUX
                     HUXEditorUtils.DrawSubtleMiniLabel("Uses all MeshFilters to calculate bounds. This setting is more accurate (especially for flat objects), but will only calculate bounds for mesh-based objects.");
                     break;
 
+                case BoundingBox.BoundsCalculationMethodEnum.Colliders:
+                    HUXEditorUtils.DrawSubtleMiniLabel("Uses all Colliders to calculate bounds. This setting is best if you want precise manual control over bounds size.");
+                    break;
+
                 case BoundingBox.BoundsCalculationMethodEnum.RendererBounds:
                     HUXEditorUtils.DrawSubtleMiniLabel("Uses all Renderers to calculate bounds. This setting is less accurate, but can calculate bounds for objects like particle systems.");
                     break;

@@ -17,6 +17,7 @@ namespace HUX.Interaction
         {
             MeshFilterBounds,   // Better for flattened objects - this mode also treats RectTransforms as quad meshes
             RendererBounds,     // Better for objects with non-mesh renderers
+            Colliders,          // Better if you want precise control
             Default,            // Use the default method (RendererBounds)
         }
 
@@ -160,13 +161,13 @@ namespace HUX.Interaction
                 RefreshTargetBounds();
             }
 
-            /*if (target != null)
+            if (target != null)
             {
                 foreach (Vector3 point in boundsPoints)
                 {
                     Gizmos.DrawSphere(target.transform.TransformPoint(point), 0.01f);
                 }
-            }*/
+            }
         }
         #endif
 
@@ -220,6 +221,60 @@ namespace HUX.Interaction
 
                         rendererObj.bounds.GetCornerPositionsFromRendererBounds(ref corners);
                         boundsPoints.AddRange(corners);
+                    }
+                    break;
+
+                case BoundsCalculationMethodEnum.Colliders:
+                    Collider[] colliders = target.GetComponentsInChildren<Collider>();
+                    for (int i = 0; i < colliders.Length; i++)
+                    {
+                        switch (colliders[i].GetType().Name)
+                        {
+                            case "SphereCollider":
+                                SphereCollider sc = colliders[i] as SphereCollider;
+                                Bounds sphereBounds = new Bounds(sc.center, Vector3.one * sc.radius * 2);
+                                sphereBounds.GetFacePositions(sc.transform, ref corners);
+                                boundsPoints.AddRange(corners);
+                                break;
+
+                            case "BoxCollider":
+                                BoxCollider bc = colliders[i] as BoxCollider;
+                                Bounds boxBounds = new Bounds(bc.center, bc.size);
+                                boxBounds.GetCornerPositions(bc.transform, ref corners);
+                                boundsPoints.AddRange(corners);
+                                break;
+
+                            case "MeshCollider":
+                                MeshCollider mc = colliders[i] as MeshCollider;
+                                Bounds meshBounds = mc.sharedMesh.bounds;
+                                meshBounds.GetCornerPositions(mc.transform, ref corners);
+                                boundsPoints.AddRange(corners);
+                                break;
+
+                            case "CapsuleCollider":
+                                CapsuleCollider cc = colliders[i] as CapsuleCollider;
+                                Bounds capsuleBounds = new Bounds(cc.center, Vector3.zero);
+                                switch (cc.direction)
+                                {
+                                    case 0:
+                                        capsuleBounds.size = new Vector3(cc.height, cc.radius * 2, cc.radius * 2);
+                                        break;
+
+                                    case 1:
+                                        capsuleBounds.size = new Vector3(cc.radius * 2, cc.height, cc.radius * 2);
+                                        break;
+
+                                    case 2:
+                                        capsuleBounds.size = new Vector3(cc.radius * 2, cc.radius * 2, cc.height);
+                                        break;
+                                }
+                                capsuleBounds.GetFacePositions(cc.transform, ref corners);
+                                boundsPoints.AddRange(corners);
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                     break;
 

@@ -46,6 +46,14 @@ public static class BoundsExtentions
     public const int RB_LB = 6;
     public const int LB_LT = 7;
 
+    // Face points
+    public const int TOP = 0;
+    public const int BOT = 1;
+    public const int LFT = 2;
+    public const int RHT = 3;
+    public const int FWD = 4;
+    public const int BCK = 5;
+
     public enum Axis
     {
         X,
@@ -142,6 +150,25 @@ public static class BoundsExtentions
         positions[BoundsExtentions.RBB] = new Vector3(rightEdge, bottomEdge, backEdge);
         positions[BoundsExtentions.RTF] = new Vector3(rightEdge, topEdge, frontEdge);
         positions[BoundsExtentions.RTB] = new Vector3(rightEdge, topEdge, backEdge);
+    }
+
+    public static void GetFacePositions(this Bounds bounds, Transform transform, ref Vector3[] positions)
+    {
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        const int numPoints = 6;
+        if (positions == null || positions.Length != numPoints)
+        {
+            positions = new Vector3[numPoints];
+        }
+
+        positions[BoundsExtentions.TOP] = transform.TransformPoint (center + Vector3.up * extents.y);
+        positions[BoundsExtentions.BOT] = transform.TransformPoint(center + Vector3.down * extents.y);
+        positions[BoundsExtentions.LFT] = transform.TransformPoint(center + Vector3.left * extents.x);
+        positions[BoundsExtentions.RHT] = transform.TransformPoint(center + Vector3.right * extents.x);
+        positions[BoundsExtentions.FWD] = transform.TransformPoint(center + Vector3.forward * extents.z);
+        positions[BoundsExtentions.BCK] = transform.TransformPoint(center + Vector3.back * extents.z);
     }
 
     /// <summary>
