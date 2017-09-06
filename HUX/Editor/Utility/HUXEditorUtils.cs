@@ -182,6 +182,40 @@ namespace HUX
             return obj;
         }
 
+        public static GameObject DropDownGameObjectField(string label, GameObject obj, Transform transform)
+        {
+            Transform[] optionObjects = transform.GetComponentsInChildren<Transform>(true);
+            int selectedIndex = 0;
+            string[] options = new string[optionObjects.Length + 1];
+            options[0] = "(None)";
+            for (int i = 0; i < optionObjects.Length; i++)
+            {
+                options[i + 1] = optionObjects[i].name;
+                if (obj == optionObjects[i].gameObject)
+                {
+                    selectedIndex = i + 1;
+                }
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            int newIndex = EditorGUILayout.Popup(label, selectedIndex, options);
+            if (newIndex == 0)
+            {
+                // Zero means '(None)'
+                obj = null;
+            }
+            else
+            {
+                obj = optionObjects[newIndex - 1].gameObject;
+            }
+
+            //draw the object field so people can click it
+            obj = (GameObject)EditorGUILayout.ObjectField(obj, typeof(GameObject), true);
+            EditorGUILayout.EndHorizontal();
+
+            return obj;
+        }
+
 
         /// <summary>
         /// Draws enum values as a set of toggle fields
