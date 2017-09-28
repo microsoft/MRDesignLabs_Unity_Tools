@@ -4,10 +4,10 @@
 //
 using UnityEngine;
 using System;
-using HUX.Utility;
 using UnityEngine.EventSystems;
+using UnityEngine.XR.WSA.Input;
+using HUX.Utility;
 using HUX.Focus;
-
 
 namespace HUX.Interaction
 {
@@ -36,7 +36,7 @@ namespace HUX.Interaction
         /// <summary>
         /// Currently active gesture recognizer.
         /// </summary>
-        public UnityEngine.XR.WSA.Input.GestureRecognizer ActiveRecognizer { get; private set; }
+        public GestureRecognizer ActiveRecognizer { get; private set; }
 
 		public UnityEngine.XR.WSA.Input.InteractionManager ActiveInteractionManager { get; private set; }
 
@@ -105,42 +105,42 @@ namespace HUX.Interaction
 		// This should be Start instead of Awake right?
 		protected void Start()
         {
-            ActiveRecognizer = new UnityEngine.XR.WSA.Input.GestureRecognizer();
+            ActiveRecognizer = new GestureRecognizer();
 
             ActiveRecognizer.SetRecognizableGestures(RecognizableGesures);
 
-            ActiveRecognizer.OnTappedEvent += TappedCallback;
+            ActiveRecognizer.Tapped += TappedCallback;
 
-            ActiveRecognizer.OnNavigationStartedEvent += NavigationStartedCallback;
-            ActiveRecognizer.OnNavigationUpdatedEvent += NavigationUpdatedCallback;
-            ActiveRecognizer.OnNavigationCompletedEvent += NavigationCompletedCallback;
-            ActiveRecognizer.OnNavigationCanceledEvent += NavigationCanceledCallback;
+            ActiveRecognizer.NavigationStarted += NavigationStartedCallback;
+            ActiveRecognizer.NavigationUpdated += NavigationUpdatedCallback;
+            ActiveRecognizer.NavigationCompleted += NavigationCompletedCallback;
+            ActiveRecognizer.NavigationCanceled += NavigationCanceledCallback;
 
-            ActiveRecognizer.OnHoldStartedEvent += HoldStartedCallback;
-            ActiveRecognizer.OnHoldCompletedEvent += HoldCompletedCallback;
-            ActiveRecognizer.OnHoldCanceledEvent += HoldCanceledCallback;
+            ActiveRecognizer.HoldStarted += HoldStartedCallback;
+            ActiveRecognizer.HoldCompleted += HoldCompletedCallback;
+            ActiveRecognizer.HoldCanceled += HoldCanceledCallback;
 
-            ActiveRecognizer.OnManipulationStartedEvent += ManipulationStartedCallback;
-            ActiveRecognizer.OnManipulationUpdatedEvent += ManipulationUpdatedCallback;
-            ActiveRecognizer.OnManipulationCompletedEvent += ManipulationCompletedCallback;
-            ActiveRecognizer.OnManipulationCanceledEvent += ManipulationCanceledCallback;
+            ActiveRecognizer.ManipulationStarted += ManipulationStartedCallback;
+            ActiveRecognizer.ManipulationUpdated += ManipulationUpdatedCallback;
+            ActiveRecognizer.ManipulationCompleted += ManipulationCompletedCallback;
+            ActiveRecognizer.ManipulationCanceled += ManipulationCanceledCallback;
 
             ActiveRecognizer.StartCapturingGestures();
             SetupEvents(true);
 
-			UnityEngine.XR.WSA.Input.InteractionManager.OnSourcePressed += InteractionManager_SourcePressedCallback;
-			UnityEngine.XR.WSA.Input.InteractionManager.OnSourceReleased += InteractionManager_SourceReleasedCallback;
+            UnityEngine.XR.WSA.Input.InteractionManager.InteractionSourcePressed += InteractionManager_SourcePressedCallback;
+            UnityEngine.XR.WSA.Input.InteractionManager.InteractionSourceReleased += InteractionManager_SourceReleasedCallback;
 
 			bLockFocus = true;
 		}
 
-		private void InteractionManager_SourcePressedCallback(UnityEngine.XR.WSA.Input.SourcePressedEventArgs args)
+		private void InteractionManager_SourcePressedCallback(InteractionSourcePressedEventArgs args)
 		{
 			AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnPressedEvent(focuser);
 		}
 
-		private void InteractionManager_SourceReleasedCallback(UnityEngine.XR.WSA.Input.SourceReleasedEventArgs args)
+		private void InteractionManager_SourceReleasedCallback(InteractionSourceReleasedEventArgs args)
 		{
 			AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnReleasedEvent(focuser);
@@ -153,7 +153,7 @@ namespace HUX.Interaction
 			// Only do manipulation event simulation in editor, and should we do it on PC?
 			if (Application.platform == RuntimePlatform.WindowsEditor /*|| Application.platform == RuntimePlatform.WindowsPlayer*/)
 			{
-				AFocuser focuser = GetFocuserForSource(UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand);
+				AFocuser focuser = GetFocuserForSource(InteractionSourceKind.Hand);
 
 				// Use the head's position + forward, since the focuser ray might point to the locked focus
 				Vector3 newPos = Veil.Instance.HeadTransform.position + Veil.Instance.HeadTransform.forward;
@@ -304,21 +304,21 @@ namespace HUX.Interaction
 
 		void OnDestroy()
         {
-            ActiveRecognizer.OnTappedEvent -= TappedCallback;
+            ActiveRecognizer.Tapped -= TappedCallback;
 
-            ActiveRecognizer.OnNavigationStartedEvent -= NavigationStartedCallback;
-            ActiveRecognizer.OnNavigationUpdatedEvent -= NavigationUpdatedCallback;
-            ActiveRecognizer.OnNavigationCompletedEvent -= NavigationCompletedCallback;
-            ActiveRecognizer.OnNavigationCanceledEvent -= NavigationCanceledCallback;
+            ActiveRecognizer.NavigationStarted -= NavigationStartedCallback;
+            ActiveRecognizer.NavigationUpdated -= NavigationUpdatedCallback;
+            ActiveRecognizer.NavigationCompleted -= NavigationCompletedCallback;
+            ActiveRecognizer.NavigationCanceled -= NavigationCanceledCallback;
 
-            ActiveRecognizer.OnHoldStartedEvent -= HoldStartedCallback;
-            ActiveRecognizer.OnHoldCompletedEvent -= HoldCompletedCallback;
-            ActiveRecognizer.OnHoldCanceledEvent -= HoldCanceledCallback;
+            ActiveRecognizer.HoldStarted -= HoldStartedCallback;
+            ActiveRecognizer.HoldCompleted -= HoldCompletedCallback;
+            ActiveRecognizer.HoldCanceled -= HoldCanceledCallback;
 
-            ActiveRecognizer.OnManipulationStartedEvent -= ManipulationStartedCallback;
-            ActiveRecognizer.OnManipulationUpdatedEvent -= ManipulationUpdatedCallback;
-            ActiveRecognizer.OnManipulationCompletedEvent -= ManipulationCompletedCallback;
-            ActiveRecognizer.OnManipulationCanceledEvent -= ManipulationCanceledCallback;
+            ActiveRecognizer.ManipulationStarted -= ManipulationStartedCallback;
+            ActiveRecognizer.ManipulationUpdated -= ManipulationUpdatedCallback;
+            ActiveRecognizer.ManipulationCompleted -= ManipulationCompletedCallback;
+            ActiveRecognizer.ManipulationCanceled -= ManipulationCanceledCallback;
 
             ActiveRecognizer.CancelGestures();
 
@@ -850,11 +850,13 @@ namespace HUX.Interaction
         private void NavigationStartedCallback(UnityEngine.XR.WSA.Input.NavigationStartedEventArgs args)
         {
             AFocuser focuser = GetFocuserForSource(args.source.kind);
-            Vector3 relativePosition = args.normalizedOffset;
-            Ray ray;
-
-            if (args.pose.pointer.TryGetRay(out ray))
+            Vector3 relativePosition;
+            Vector3 forward;
+            
+            if (args.sourcePose.TryGetForward(out forward)  && args.sourcePose.TryGetPosition(out relativePosition))
             {
+                Ray ray = new Ray(relativePosition, forward);
+
                 if (focuser != null)
                 {
                     NavigationStartedEvent(focuser, relativePosition, ray);
@@ -866,17 +868,22 @@ namespace HUX.Interaction
             }
         }
 
-        private void NavigationUpdatedCallback(UnityEngine.XR.WSA.Input.NavigationUpdatedEventArgs args)
+        private void NavigationUpdatedCallback(NavigationUpdatedEventArgs args)
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
-            Vector3 relativePosition = args.normalizedOffset;
+            Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetRay(out ray))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (focuser != null)
+                if (args.sourcePose.TryGetForward(out forward))
                 {
-                    NavigationUpdatedEvent(focuser, relativePosition, ray);
+                    ray = new Ray(position, forward);
+                    if (focuser != null)
+                    {
+                        NavigationUpdatedEvent(focuser, position, ray);
+                    }
                 }
             }
             else
@@ -885,17 +892,22 @@ namespace HUX.Interaction
             }
         }
 
-        private void NavigationCompletedCallback(UnityEngine.XR.WSA.Input.NavigationCompletedEventArgs args)
+        private void NavigationCompletedCallback(NavigationCompletedEventArgs args)
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
-            Vector3 relativePosition = args.normalizedOffset;
+            Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetRay(out ray))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (focuser != null)
+                if (args.sourcePose.TryGetForward(out forward))
                 {
-                    NavigationCompletedEvent(focuser, relativePosition, ray);
+                    ray = new Ray(position, forward);
+                    if (focuser != null)
+                    {
+                        NavigationCompletedEvent(focuser, position, ray);
+                    }
                 }
             }
             else
@@ -907,14 +919,19 @@ namespace HUX.Interaction
         private void NavigationCanceledCallback(UnityEngine.XR.WSA.Input.NavigationCanceledEventArgs args)
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
-            Vector3 relativePosition = args.normalizedOffset;
+            Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetRay(out ray))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (focuser != null)
+                if (args.sourcePose.TryGetForward(out forward))
                 {
-                    NavigationCanceledEvent(focuser, relativePosition, ray);
+                    ray = new Ray(position, forward);
+                    if (focuser != null)
+                    {
+                        NavigationCanceledEvent(focuser, position, ray);
+                    }
                 }
             }
             else
@@ -928,12 +945,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         if (args.tapCount >= 2)
@@ -962,12 +981,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         HoldStartedEvent(focuser, ray);
@@ -988,12 +1009,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         HoldCompletedEvent(focuser, ray);
@@ -1014,12 +1037,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         HoldCanceledEvent(focuser, ray);
@@ -1040,12 +1065,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         ManipulationStartedEvent(focuser, position, ray);
@@ -1066,12 +1093,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         ManipulationUpdatedEvent(focuser, position, ray);
@@ -1092,12 +1121,14 @@ namespace HUX.Interaction
         {
 			AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
                     if (focuser != null)
                     {
                         ManipulationCompletedEvent(focuser, position, ray);
@@ -1118,12 +1149,15 @@ namespace HUX.Interaction
         {
             AFocuser focuser = GetFocuserForSource(args.source.kind);
             Vector3 position;
+            Vector3 forward;
             Ray ray;
 
-            if (args.pose.pointer.TryGetPosition(out position))
+            if (args.sourcePose.TryGetPosition(out position))
             {
-                if (args.pose.pointer.TryGetRay(out ray))
+                if (args.sourcePose.TryGetForward(out forward))
                 {
+                    ray = new Ray(position, forward);
+
                     if (focuser != null)
                     {
                         ManipulationCanceledEvent(focuser, position, ray);

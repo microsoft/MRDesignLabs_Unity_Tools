@@ -72,6 +72,17 @@ namespace HUX.Focus
         public HUX.Cursors.Cursor CursorPrefab;
 
         /// <summary>
+        /// The beam for this focuser.
+        /// </summary>
+        public BeamController Beam { get; protected set; }
+
+        /// <summary>
+        /// Prefab for the beam controller.
+        /// </summary>
+        [Tooltip("The prefab for the beam controller")]
+        public BeamController BeamPrefab;
+
+        /// <summary>
         /// The animated cursor for this focuser.
         /// </summary>
         public StateWidget AnimatedCursor
@@ -214,6 +225,11 @@ namespace HUX.Focus
                 SetCursor(CursorPrefab);
             }
 
+            if (BeamPrefab != null)
+            {
+                SetBeam(BeamPrefab);
+            }
+
         }
 
 		protected virtual void Update()
@@ -280,11 +296,32 @@ namespace HUX.Focus
 			}
 		}
 
-		/// <summary>
-		/// Sets if the cursor is visible.
-		/// </summary>
-		/// <param name="bActive"></param>
-		public void SetCursorActive(bool bActive)
+        /// <summary>
+        /// Set the display beam for this focuser.
+        /// </summary>
+        /// <param name="beamPrefab">The prefab to instantiate.</param>
+        public void SetBeam(BeamController beamPrefab)
+        {
+            if (Beam != null)
+            {
+                DestroyObject(Beam.gameObject);
+                Beam = null;
+            }
+
+            //Create the cursor and give ourselves to it as reference.
+            if (beamPrefab != null)
+            {
+                Beam = GameObject.Instantiate(beamPrefab);
+                Beam.Init(this);
+                Beam.beamActive = true;
+            }
+        }
+
+        /// <summary>
+        /// Sets if the cursor is visible.
+        /// </summary>
+        /// <param name="bActive"></param>
+        public void SetCursorActive(bool bActive)
 		{
 			Cursor.gameObject.SetActive(bActive);
 		}
