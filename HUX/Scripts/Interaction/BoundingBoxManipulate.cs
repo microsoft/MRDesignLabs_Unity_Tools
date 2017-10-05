@@ -241,6 +241,12 @@ namespace HUX.Interaction
             }
         }
 
+        public Vector3 TargetScale {
+            get {
+                return scaleTransform.localScale;
+            }
+        }
+
         /// <summary>
         /// Convenience function to help determine what function a handle serves
         /// </summary>
@@ -734,6 +740,9 @@ namespace HUX.Interaction
                 focuser.LockFocus();
             }
         }
+
+        [SerializeField]
+        private Transform scaleTransform;
 
         [SerializeField]
         private BoundingBoxHandle activeHandle;

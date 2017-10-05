@@ -302,32 +302,29 @@ namespace HUX.Interaction
 
             // Get positions for each side of the bounding box
             // Choose the one that's closest to us
-            forwards[0] = boundingBox.transform.forward;
-            forwards[1] = boundingBox.transform.right;
-            forwards[2] = -boundingBox.transform.forward;
-            forwards[3] = -boundingBox.transform.right;
-            Vector3 scale = boundingBox.TargetBoundsLocalScale;
-            float maxXYScale = Mathf.Max(scale.x, scale.y);
+            Vector3 scale = boundingBox.TargetScale;
+            directions[0] = boundingBox.transform.forward * scale.z * 0.5f;
+            directions[1] = boundingBox.transform.right * scale.x * 0.5f;
+            directions[2] = -boundingBox.transform.forward * scale.z * 0.5f;
+            directions[3] = -boundingBox.transform.right * scale.x * 0.5f;
             float closestSoFar = Mathf.Infinity;
             Vector3 finalPosition = Vector3.zero;
-            Vector3 finalForward = Vector3.zero;
+            Vector3 finalDirection = Vector3.zero;
             Vector3 headPosition = Camera.main.transform.position;
 
-            for (int i = 0; i < forwards.Length; i++) {
-                Vector3 nextPosition = boundingBox.transform.position +
-                (forwards[i] * -maxXYScale) +
-                (Vector3.up * (-scale.y * HoverOffsetYScale));
+            for (int i = 0; i < directions.Length; i++) {
+                Vector3 nextPosition = boundingBox.transform.position + (directions[i] + Vector3.up * (-scale.y * HoverOffsetYScale));
 
                 float distance = Vector3.Distance(nextPosition, headPosition);
                 if (distance < closestSoFar) {
                     closestSoFar = distance;
                     finalPosition = nextPosition;
-                    finalForward = forwards[i];
+                    finalDirection = directions[i];
                 }
             }
 
             // Apply hover offset
-            finalPosition += (finalForward * -HoverOffsetZ);
+            finalPosition += (finalDirection.normalized * HoverOffsetZ);
 
             // Follow our bounding box
             if (smooth) {
@@ -424,7 +421,7 @@ namespace HUX.Interaction
 #endif
 
         private ButtonTemplate[] defaultButtons;
-        private Vector3[] forwards = new Vector3[4];
+        private Vector3[] directions = new Vector3[4];
         private Vector3 targetBarSize = Vector3.one;
         private float lastTimeTapped = 0f;
         private float coolDownTime = 0.5f;
