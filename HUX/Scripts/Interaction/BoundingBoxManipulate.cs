@@ -243,7 +243,7 @@ namespace HUX.Interaction
 
         public Vector3 TargetScale {
             get {
-                return scaleTransform.localScale;
+                return scaleTransform != null ? scaleTransform.localScale : Vector3.one;
             }
         }
 
