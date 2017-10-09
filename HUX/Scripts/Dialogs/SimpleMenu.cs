@@ -33,11 +33,10 @@ namespace HUX.Dialogs
         /// <summary>
         /// How many buttons can be added to the menu
         /// </summary>
-        public const int MaxButtons = 10;
+        [Range(1,64)]
+        public int MaxButtons = 10;
 
         public GameObject ButtonPrefab;
-
-        public TextMesh TitleText;
 
         public virtual T[] Buttons
         {
@@ -47,45 +46,34 @@ namespace HUX.Dialogs
             }
         }
 
-        public virtual string Title {
-            get {
-                return TitleText.text;
-            }
-            set {
-                TitleText.text = value;
-            }
-        }
-
-        public bool DisplayTitle {
-            get {
-                return TitleText.gameObject.activeSelf;
-            }
-            set {
-                TitleText.gameObject.SetActive(value);
-            }
-        }
-
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         /// <summary>
         /// Used by inspectors
         /// </summary>
         public virtual void EditorRefreshButtons()
         {
-
+            if (buttons == null)
+                 buttons = new T[MaxButtons];
+            else if (buttons.Length != MaxButtons)
+                Array.Resize<T>(ref buttons, MaxButtons);
         }
-#endif
+        #endif
 
         [SerializeField]
         protected Transform buttonParent;
 
         [SerializeField]
-        protected T[] buttons = new T[MaxButtons];
+        protected T[] buttons;
 
         protected GameObject[] instantiatedButtons;
-        protected GameObject instantiatedTitle;
 
         protected virtual void OnEnable()
         {
+            if (buttons == null)
+                buttons = new T[MaxButtons];
+            else if (buttons.Length != MaxButtons)
+                Array.Resize<T>(ref buttons, MaxButtons);
+
             GenerateButtons();
         }
 

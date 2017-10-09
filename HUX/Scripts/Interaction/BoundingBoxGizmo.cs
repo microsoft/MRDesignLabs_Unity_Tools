@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
-using HUX.Buttons;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace HUX.Interaction
@@ -18,6 +16,11 @@ namespace HUX.Interaction
         /// How much to pad the scale of the box to fit around objects (as % of largest dimension)
         /// </summary>
         public float ScalePadding = 0.05f;
+
+        /// <summary>
+        /// How much to pad the scale of the box on an axis that's flattened
+        /// </summary>
+        public float FlattenedScalePadding = 0f;
 
         /// <summary>
         /// Physics layer to use for rendering
@@ -55,22 +58,38 @@ namespace HUX.Interaction
             transform.position = boundingBox.TargetBoundsCenter;
             Vector3 scale = boundingBox.TargetBoundsLocalScale;
             float largestDimension = Mathf.Max(Mathf.Max(scale.x, scale.y), scale.z);
-            scale.x += (largestDimension * ScalePadding);
-            scale.y += (largestDimension * ScalePadding);
-            scale.z += (largestDimension * ScalePadding);
+            switch (boundingBox.FlattenedAxis)
+            {
+                case BoundingBox.FlattenModeEnum.DoNotFlatten:
+                default:
+                    scale.x += (largestDimension * ScalePadding);
+                    scale.y += (largestDimension * ScalePadding);
+                    scale.z += (largestDimension * ScalePadding);
+                    break;
+
+                case BoundingBox.FlattenModeEnum.FlattenX:
+                    scale.x += (largestDimension * FlattenedScalePadding);
+                    scale.y += (largestDimension * ScalePadding);
+                    scale.z += (largestDimension * ScalePadding);
+                    break;
+
+                case BoundingBox.FlattenModeEnum.FlattenY:
+                    scale.x += (largestDimension * ScalePadding);
+                    scale.y += (largestDimension * FlattenedScalePadding);
+                    scale.z += (largestDimension * ScalePadding);
+                    break;
+
+                case BoundingBox.FlattenModeEnum.FlattenZ:
+                    scale.x += (largestDimension * ScalePadding);
+                    scale.y += (largestDimension * ScalePadding);
+                    scale.z += (largestDimension * FlattenedScalePadding);
+                    break;
+            }
+
+
             scaleTransform.localScale = scale;
 
             Vector3 rotation = boundingBox.Target.transform.eulerAngles;
-            // Limit rotation by permitted operations
-            // Get all our handle positions for rotation
-            /*if ((manipulator.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateX) != BoundingBoxManipulate.OperationEnum.RotateX)
-                rotation.x = 0f;
-
-            if ((manipulator.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateY) != BoundingBoxManipulate.OperationEnum.RotateZ)
-                rotation.z = 0f;
-
-            if ((manipulator.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateZ) != BoundingBoxManipulate.OperationEnum.RotateY)
-                rotation.y = 0f;*/
 
             transform.eulerAngles = rotation;
         }

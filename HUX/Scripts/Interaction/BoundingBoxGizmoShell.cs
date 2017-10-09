@@ -127,15 +127,38 @@ namespace HUX.Interaction
                 return;
             }
 
+            // Get our manipulate bb
+            BoundingBoxManipulate manipulate = boundingBox.GetComponent<BoundingBoxManipulate>();
+
             // Reset our scale - only scaleTransform can be changed
             transform.localScale = Vector3.one;
 
             // Get the positions of our handles
             localBounds.size = scaleTransform.localScale;
             localBounds.center = Vector3.zero;
-            localBounds.GetCornerAndMidPointPositions(transform, ref handlePositions);
             cubeHandleMatrixes.Clear();
             sphereHandleMatrixes.Clear();
+            if (manipulate.FlattenedAxis == BoundingBox.FlattenModeEnum.DoNotFlatten)
+            {
+                localBounds.GetCornerAndMidPointPositions(transform, ref handlePositions);
+            }
+            else
+            {
+                switch (manipulate.FlattenedAxis)
+                {
+                    case BoundingBox.FlattenModeEnum.FlattenX:
+                        localBounds.GetCornerAndMidPointPositions2D(transform, ref handlePositions, BoundsExtentions.Axis.X);
+                        break;
+
+                    case BoundingBox.FlattenModeEnum.FlattenY:
+                        localBounds.GetCornerAndMidPointPositions2D(transform, ref handlePositions, BoundsExtentions.Axis.Y);
+                        break;
+
+                    case BoundingBox.FlattenModeEnum.FlattenZ:
+                        localBounds.GetCornerAndMidPointPositions2D(transform, ref handlePositions, BoundsExtentions.Axis.Z);
+                        break;
+                }
+            }
 
             // Pos / rot / scale for our handles
             // Scale is based on smallest dimension to ensure handles don't overlap
@@ -151,10 +174,12 @@ namespace HUX.Interaction
 
            // Get the index of our active handle so we can draw it with a different material
             activeHandleIndex = -1;
-            BoundingBoxManipulate manipulate = boundingBox.GetComponent<BoundingBoxManipulate>();
             if (manipulate.ActiveHandle != null && manipulate.ActiveHandle.HandleType != BoundingBoxHandle.HandleTypeEnum.Drag)
             {
-                activeHandleIndex = (int)manipulate.ActiveHandle.HandleType;
+                if (manipulate.ActiveHandle.HandleTypeFlattened == BoundingBoxHandle.HandleTypeFlattenedEnum.None)
+                    activeHandleIndex = (int)manipulate.ActiveHandle.HandleType;
+                else
+                    activeHandleIndex = (int)manipulate.ActiveHandle.HandleTypeFlattened;
             }
 
             // If we're not accepting input, just draw the box bounds
@@ -165,6 +190,7 @@ namespace HUX.Interaction
             }
             else
             {
+                Debug.Log("Switching current operation " + manipulate.CurrentOperation);
                 switch (manipulate.CurrentOperation)
                 {
                     default:
@@ -182,7 +208,14 @@ namespace HUX.Interaction
                         edgeMaterial.SetColor("_EmissionColor", manipulate.ManipulatingNow ? TargetColor : ActiveColor);
 
                         // Get all our handle positions
-                        GetAllHandleMatrixes(handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        if (manipulate.FlattenedAxis == BoundingBox.FlattenModeEnum.DoNotFlatten)
+                        {
+                            GetUnflattenedHandleMatrixes(manipulate.PermittedOperations, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
+                        else
+                        {
+                            GetFlattenedHandleMatrixes(manipulate.PermittedOperations, manipulate.FlattenedAxis, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
                         // Draw our handles
                         DrawHandleMeshes(cubeHandleMatrixes, BoxMesh, InactiveColor);
                         DrawHandleMeshes(sphereHandleMatrixes, SphereMesh, InactiveColor);
@@ -198,7 +231,14 @@ namespace HUX.Interaction
                         edgeMaterial.SetColor("_EmissionColor", InactiveColor);
 
                         // Get all our handle positions
-                        GetAllHandleMatrixes(handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        if (manipulate.FlattenedAxis == BoundingBox.FlattenModeEnum.DoNotFlatten)
+                        {
+                            GetUnflattenedHandleMatrixes(manipulate.PermittedOperations, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
+                        else
+                        {
+                            GetFlattenedHandleMatrixes(manipulate.PermittedOperations, manipulate.FlattenedAxis, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
                         // Draw our handles
                         DrawHandleMeshes(cubeHandleMatrixes, BoxMesh, InactiveColor);
                         DrawHandleMeshes(sphereHandleMatrixes, SphereMesh, ActiveColor);
@@ -213,7 +253,14 @@ namespace HUX.Interaction
                         edgeMaterial.SetColor("_EmissionColor", InactiveColor);
 
                         // Get all our handle positions
-                        GetAllHandleMatrixes(handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        if (manipulate.FlattenedAxis == BoundingBox.FlattenModeEnum.DoNotFlatten)
+                        {
+                            GetUnflattenedHandleMatrixes(manipulate.PermittedOperations, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
+                        else
+                        {
+                            GetFlattenedHandleMatrixes(manipulate.PermittedOperations, manipulate.FlattenedAxis, handlePositions, rotation, scale, cubeHandleMatrixes, sphereHandleMatrixes, activeHandleIndex);
+                        }
                         // Draw our handles
                         DrawHandleMeshes(cubeHandleMatrixes, BoxMesh, ActiveColor);
                         DrawHandleMeshes(sphereHandleMatrixes, SphereMesh, InactiveColor);
@@ -238,12 +285,80 @@ namespace HUX.Interaction
             Graphics.DrawMeshInstanced(mesh, 0, HandleMaterial, matrixes, propertyBlock, UnityEngine.Rendering.ShadowCastingMode.Off, false, PhysicsLayer);
         }
 
-        private void GetAllHandleMatrixes(Vector3[] positions, Quaternion rotation, Vector3 scale, List<Matrix4x4> cubeMatrixes, List<Matrix4x4> sphereMatrixes, int targetIndex)
+        private void GetFlattenedHandleMatrixes(
+            BoundingBoxManipulate.OperationEnum permittedOperations,
+            BoundingBoxManipulate.FlattenModeEnum flattenAxis,
+            Vector3[] positions,
+            Quaternion rotation,
+            Vector3 scale,
+            List<Matrix4x4> cubeMatrixes,
+            List<Matrix4x4> sphereMatrixes,
+            int targetIndex)
         {
-            BoundingBoxManipulate manipulate = boundingBox.GetComponent<BoundingBoxManipulate>();
-
             // Get all our handle positions for cubes
-            if ((manipulate.PermittedOperations & BoundingBoxManipulate.OperationEnum.ScaleUniform) == BoundingBoxManipulate.OperationEnum.ScaleUniform)
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.ScaleUniform) == BoundingBoxManipulate.OperationEnum.ScaleUniform)
+            {
+                for (int i = BoundsExtentions.LT; i <= BoundsExtentions.RB; i++)
+                {
+                    if (i == targetIndex)
+                        continue;
+
+                    cubeMatrixes.Add(Matrix4x4.TRS(handlePositions[i], rotation, scale));
+                }
+            }
+
+            switch (flattenAxis)
+            {
+                case BoundingBox.FlattenModeEnum.FlattenX:
+                default:
+                    break;
+
+                case BoundingBox.FlattenModeEnum.FlattenY:
+                    break;
+
+                case BoundingBox.FlattenModeEnum.FlattenZ:
+                    break;
+            }
+            // Get all our handle positions for rotation
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateX) == BoundingBoxManipulate.OperationEnum.RotateX)
+            {
+                if (BoundsExtentions.LT_RT != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.LT_RT], rotation, scale));
+
+                if (BoundsExtentions.RB_LB != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.RB_LB], rotation, scale));
+            }
+
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateY) == BoundingBoxManipulate.OperationEnum.RotateY)
+            {
+                if (BoundsExtentions.LB_LT != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.LB_LT], rotation, scale));
+
+                if (BoundsExtentions.RT_RB != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.RT_RB], rotation, scale));
+            }
+
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateZ) == BoundingBoxManipulate.OperationEnum.RotateZ)
+            {
+                if (BoundsExtentions.LT_RT != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.LT_RT], rotation, scale));
+
+                if (BoundsExtentions.RB_LB != targetIndex)
+                    sphereMatrixes.Add(Matrix4x4.TRS(handlePositions[BoundsExtentions.RB_LB], rotation, scale));
+            }
+        }
+
+        private void GetUnflattenedHandleMatrixes(
+            BoundingBoxManipulate.OperationEnum permittedOperations, 
+            Vector3[] positions, 
+            Quaternion rotation, 
+            Vector3 scale, 
+            List<Matrix4x4> cubeMatrixes, 
+            List<Matrix4x4> sphereMatrixes, 
+            int targetIndex)
+        {
+            // Get all our handle positions for cubes
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.ScaleUniform) == BoundingBoxManipulate.OperationEnum.ScaleUniform)
             {
                 for (int i = BoundsExtentions.LBF; i <= BoundsExtentions.RTB; i++)
                 {
@@ -254,7 +369,7 @@ namespace HUX.Interaction
                 }
             }
             // Get all our handle positions for rotation
-            if ((manipulate.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateX) == BoundingBoxManipulate.OperationEnum.RotateX)
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateX) == BoundingBoxManipulate.OperationEnum.RotateX)
             {
                 for (int i = BoundsExtentions.LTF_RTF; i <= BoundsExtentions.RBB_LBB; i++)
                 {
@@ -265,7 +380,7 @@ namespace HUX.Interaction
                 }
             }
 
-            if ((manipulate.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateY) == BoundingBoxManipulate.OperationEnum.RotateY)
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateY) == BoundingBoxManipulate.OperationEnum.RotateY)
             {
                 for (int i = BoundsExtentions.LTF_LBF; i <= BoundsExtentions.RTF_RBF; i++)
                 {
@@ -276,7 +391,7 @@ namespace HUX.Interaction
                 }
             }
 
-            if ((manipulate.PermittedOperations & BoundingBoxManipulate.OperationEnum.RotateZ) == BoundingBoxManipulate.OperationEnum.RotateZ)
+            if ((permittedOperations & BoundingBoxManipulate.OperationEnum.RotateZ) == BoundingBoxManipulate.OperationEnum.RotateZ)
             {
                 for (int i = BoundsExtentions.RBF_RBB; i <= BoundsExtentions.LTF_LTB; i++)
                 {

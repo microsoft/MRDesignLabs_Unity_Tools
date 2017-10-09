@@ -33,7 +33,7 @@ namespace HUX
             textButton.DisableText = EditorGUILayout.Toggle("Disable text", textButton.DisableText);
             if (textButton.DisableText)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -41,7 +41,7 @@ namespace HUX
             
             if (textButton.Profile == null)
             {
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -55,7 +55,7 @@ namespace HUX
                 {
                     GUI.color = HUXEditorUtils.ErrorColor;
                     EditorGUILayout.LabelField("You must select a text mesh object.");
-                    HUXEditorUtils.SaveChanges(target);
+                   HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
             } else
@@ -106,7 +106,7 @@ namespace HUX
 
             HUXEditorUtils.DrawProfileInspector(textButton.Profile, textButton);
 
-            HUXEditorUtils.SaveChanges(target);
+           HUXEditorUtils.SaveChanges(target, serializedObject);
             serializedObject.ApplyModifiedProperties();
         }
     }

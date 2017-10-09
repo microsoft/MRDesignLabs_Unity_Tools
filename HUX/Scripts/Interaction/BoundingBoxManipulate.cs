@@ -4,8 +4,6 @@
 //
 using HUX.Buttons;
 using HUX.Focus;
-using HUX.Receivers;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace HUX.Interaction
@@ -30,6 +28,22 @@ namespace HUX.Interaction
         }
 
         #region public
+
+        public virtual bool HasFocus
+        {
+            get
+            {
+                return hasFocus;
+            }
+        }
+
+        public virtual float LastFocusExit
+        {
+            get
+            {
+                return lastFocusExit;
+            }
+        }
 
         /// <summary>
         /// Makes bounding box manipulatable by user
@@ -102,11 +116,40 @@ namespace HUX.Interaction
                     return OperationEnum.None;
                 }
 
-                return GetBoundingBoxOperationFromHandleType(activeHandle.HandleType);
+                return GetBoundingBoxOperationFromHandleType(activeHandle.HandleType, activeHandle.HandleTypeFlattened);
             }
             set
             {
+                RefreshActiveHandles();
                 SetHandleByOperation(value);
+            }
+        }
+
+        public override FlattenModeEnum FlattenedAxis
+        {
+            get
+            {
+                return flattenedAxis;
+            }
+
+            protected set
+            {
+                if (value != flattenedAxis)
+                {
+                    flattenedAxis = value;
+                    RefreshActiveHandles();
+                    // Make sure our active handle is still legitmiate
+                    SetHandleByOperation(CurrentOperation);
+                }
+            }
+        }
+
+        public BoundsCalculationMethodEnum BoundsMethodOverride
+        {
+            set
+            {
+                if (target != null && value != BoundsCalculationMethodEnum.Default)
+                    boundsMethodOverride = value;
             }
         }
 
@@ -178,6 +221,7 @@ namespace HUX.Interaction
                     }
                     target = value;
                     // Reset active handle to drag
+                    RefreshActiveHandles();
                     SetHandleByOperation(OperationEnum.Drag);
                     ManipulatingNow = false;
                 }
@@ -191,8 +235,15 @@ namespace HUX.Interaction
                     RefreshTargetBounds();
                 } else
                 {
+                    boundsMethodOverride = BoundsCalculationMethodEnum.Default;
                     ActiveHandle = null;
                 }
+            }
+        }
+
+        public Vector3 TargetScale {
+            get {
+                return scaleTransform != null ? scaleTransform.localScale : Vector3.one;
             }
         }
 
@@ -201,8 +252,32 @@ namespace HUX.Interaction
         /// </summary>
         /// <param name="handleType"></param>
         /// <returns></returns>
-        public static OperationEnum GetBoundingBoxOperationFromHandleType(BoundingBoxHandle.HandleTypeEnum handleType)
+        public static OperationEnum GetBoundingBoxOperationFromHandleType(BoundingBoxHandle.HandleTypeEnum handleType, BoundingBoxHandle.HandleTypeFlattenedEnum flattenedHandleType)
         {
+            switch (flattenedHandleType)
+            {
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.None:
+                default:
+                    break;
+
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Drag:
+                    return OperationEnum.Drag;
+
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Scale_LB:
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Scale_LT:
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Scale_RB:
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Scale_RT:
+                    return OperationEnum.ScaleUniform;
+
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Rotate_RB_LB:
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Rotate_LT_RT:
+                    return OperationEnum.RotateZ;
+
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Rotate_LB_LT:
+                case BoundingBoxHandle.HandleTypeFlattenedEnum.Rotate_RT_RB:
+                    return OperationEnum.RotateY;
+            }
+
             switch (handleType)
             {
                 case BoundingBoxHandle.HandleTypeEnum.Drag:
@@ -246,6 +321,10 @@ namespace HUX.Interaction
         {
             base.OnEnable();
             manipulatingNow = false;
+            foreach (GameObject handle in Interactibles)
+            {
+                handle.SetActive(false);
+            }
         }
 
         #endregion
@@ -253,19 +332,17 @@ namespace HUX.Interaction
         #region manipulation events
         protected override void OnFocusEnter(GameObject obj, FocusArgs args)
         {
-            if (!ManipulatingNow)
-            {
-                //TODO show handle mesh
-            }
+            hasFocus = true;
+            lastFocusExit = Mathf.NegativeInfinity;
+
             base.OnFocusEnter(obj, args);
         }
 
         protected override void OnFocusExit(GameObject obj, FocusArgs args)
         {
-            if (!ManipulatingNow)
-            {
-                //TODO hide handle mesh
-            }
+            hasFocus = false;
+            lastFocusExit = Time.time;
+
             base.OnFocusExit(obj, args);
         }
 
@@ -357,16 +434,16 @@ namespace HUX.Interaction
             if (!Application.isPlaying)
                 return;
 
-			// Don't do the hands check if this is editor mode
-			if (Application.platform == RuntimePlatform.WindowsEditor)
-			{
-				// Check to see if our hands have exited the screen
-				// If they have, stop manipulating
-				if (!Veil.Instance.HandVisible)
-				{
-					ManipulatingNow = false;
-				}
-			}
+            // Don't do the hands check if this is editor mode
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // Check to see if our hands have exited the screen
+                // If they have, stop manipulating
+                if (!Veil.Instance.HandVisible)
+                {
+                    ManipulatingNow = false;
+                }
+            }
 
             UpdateUserManipulation();
             UpdateTargetManipulation();
@@ -381,6 +458,7 @@ namespace HUX.Interaction
         {
             if (ManipulatingNow)
             {
+                transformHelper.parent = null;
                 // Projecting the movement vector of the hand on the reference vector
                 Vector3 proj = Vector3.Project(smoothVelocity, orthogonalVect);
 
@@ -388,7 +466,6 @@ namespace HUX.Interaction
                 // We're using some magic numbers in here to keep the multiplier ranges intuitive
                 switch (CurrentOperation)
                 {
-
                     case OperationEnum.Drag:
                         transformHelper.position -= (smoothVelocity * DragMultiplier);
                         break;
@@ -482,13 +559,15 @@ namespace HUX.Interaction
             CreateTransforms();
 
             // Reset the transform helper to 1,1,1 / idenity
+            transformHelper.parent = null;
             transformHelper.localScale = Vector3.one;
             transformHelper.rotation = Quaternion.identity;
             adjustedScaleTarget = Vector3.one;
             smoothVelocity = Vector3.zero;
             
             // Set up our transforms and gestures based on the operation we're performing
-            OperationEnum operation = GetBoundingBoxOperationFromHandleType(ActiveHandle.HandleType);
+            OperationEnum operation = GetBoundingBoxOperationFromHandleType(ActiveHandle.HandleType, ActiveHandle.HandleTypeFlattened);
+            Debug.Log("Operation on start manipulating is " + operation);
             switch (operation)
             {
                 case OperationEnum.ScaleUniform:
@@ -555,6 +634,8 @@ namespace HUX.Interaction
                 return;
 
             manipulatingNow = false;
+            transformHelper.parent = transform;
+
             if (focuser != null)
             {
                 focuser.ReleaseFocus();
@@ -583,7 +664,16 @@ namespace HUX.Interaction
                     break;
 
                 default:
-                    //TODO link up other operations here
+                    foreach (GameObject obj in Interactibles)
+                    {
+                        BoundingBoxHandle h = obj.GetComponent<BoundingBoxHandle>();
+                        OperationEnum handleOp = GetBoundingBoxOperationFromHandleType(h.HandleType, h.HandleTypeFlattened);
+                        if (handleOp == operation)
+                        {
+                            ActiveHandle = h;
+                            break;
+                        }
+                    }
                     break;
             }
 
@@ -594,8 +684,41 @@ namespace HUX.Interaction
             foreach (GameObject handleGo in Interactibles)
             {
                 BoundingBoxHandle handle = handleGo.GetComponent<BoundingBoxHandle>();
-                OperationEnum handleOperation = GetBoundingBoxOperationFromHandleType(handle.HandleType);
-                handleGo.SetActive((handleOperation & permittedOperations) != 0);
+
+                if (handle.HandleType == BoundingBoxHandle.HandleTypeEnum.Drag)
+                {
+                    // Drag is a special case - it's active when flattened and when not
+                    handle.gameObject.SetActive((permittedOperations & OperationEnum.Drag) != 0);
+                }
+                else
+                {
+                    OperationEnum handleOperation = GetBoundingBoxOperationFromHandleType(handle.HandleType, handle.HandleTypeFlattened);
+                    bool operationPermitted = (handleOperation & permittedOperations) != 0;
+                    bool flattenedTypePermitted =
+                        (FlattenedAxis == FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened == BoundingBoxHandle.HandleTypeFlattenedEnum.None) ||
+                        (FlattenedAxis != FlattenModeEnum.DoNotFlatten && handle.HandleTypeFlattened != BoundingBoxHandle.HandleTypeFlattenedEnum.None);
+
+                    handleGo.SetActive(operationPermitted & flattenedTypePermitted);
+
+                    switch (FlattenedAxis)
+                    {
+                        case FlattenModeEnum.DoNotFlatten:
+                        default:
+                            break;
+
+                        case FlattenModeEnum.FlattenX:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.X);
+                            break;
+
+                        case FlattenModeEnum.FlattenY:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Y);
+                            break;
+
+                        case FlattenModeEnum.FlattenZ:
+                            handle.RefreshFlattenedPosition(BoundsExtentions.Axis.Z);
+                            break;
+                    }
+                }
             }
         }
 
@@ -619,6 +742,9 @@ namespace HUX.Interaction
         }
 
         [SerializeField]
+        private Transform scaleTransform;
+
+        [SerializeField]
         private BoundingBoxHandle activeHandle;
 
         [SerializeField]
@@ -630,12 +756,20 @@ namespace HUX.Interaction
         [SerializeField]
         private OperationEnum permittedOperations = OperationEnum.Drag | OperationEnum.RotateY | OperationEnum.ScaleUniform;
 
+        /// <summary>
+        /// Can be set to override the default bounds calculation method
+        /// </summary>
+        private BoundsCalculationMethodEnum boundsMethodOverride = BoundsCalculationMethodEnum.Default;
+
         private Vector3 lastNavigatePos = Vector3.zero;
         private Vector3 navigateVelocity = Vector3.zero;
 
         private Vector3 smoothVelocity = Vector3.zero;
         private Vector3 adjustedScaleTarget = Vector3.one;
         private Vector3 targetPosition = Vector3.zero;
+
+        protected bool hasFocus;
+        protected float lastFocusExit = Mathf.NegativeInfinity;
 
         /// <summary>
         /// A vector orthogonal to the rotation axis.
@@ -648,3 +782,4 @@ namespace HUX.Interaction
         #endregion
     }
 }
+ 

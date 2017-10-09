@@ -24,6 +24,7 @@ namespace HUX
         public readonly static Color SectionColor = new Color(0.42f, 0.43f, 0.47f, 0.25f);
         public readonly static Color DarkColor = new Color(0.1f, 0.1f, 0.1f);
         public readonly static Color ObjectColorEmpty = new Color(0.75f, 0.8f, 0.9f);
+        public readonly static Color ProfileColor = new Color(0.88f, 0.7f, .97f);
 
         /// <summary>
         /// Draws a field for scriptable object profiles
@@ -36,7 +37,7 @@ namespace HUX
         public static T DrawProfileField<T>(T profile) where T : ButtonProfile
         {
             Color prevColor = GUI.color;
-            GUI.color = Color.Lerp(Color.white, Color.gray, 0.5f);
+            GUI.color = ProfileColor;//Color.Lerp(Color.white, Color.gray, 0.5f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUI.color = Color.Lerp(Color.white, Color.gray, 0.25f);
             EditorGUILayout.LabelField("Select a " + typeof(T).Name + " or create a new profile", EditorStyles.miniBoldLabel);
@@ -49,6 +50,7 @@ namespace HUX
                 EditorGUILayout.BeginVertical();
                 List<Type> types = GetDerivedTypes(typeof(T), Assembly.GetAssembly(typeof(T)));
 
+                EditorGUILayout.BeginHorizontal();
                 foreach (Type profileType in types)
                 {
                     if (GUILayout.Button("Create " + profileType.Name))
@@ -56,14 +58,24 @@ namespace HUX
                         profile = CreateProfile<T>(profileType);
                     }
                 }
+                if (GUILayout.Button ("What's a profile?")) {
+                    LaunchProfileHelp();
+                }
+                EditorGUILayout.EndHorizontal();
+
                 EditorGUILayout.EndVertical();
             }
             else
             {
+                EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Create Profile"))
                 {
                     profile = CreateProfile<T>();
                 }
+                if (GUILayout.Button("What's a profile?")) {
+                    LaunchProfileHelp();
+                }
+                EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
@@ -75,6 +87,18 @@ namespace HUX
 
             GUI.color = prevColor;
             return newProfile;
+        }
+
+        public static void LaunchProfileHelp() {
+            EditorUtility.DisplayDialog(
+                        "Profiles Help",
+                        "Profiles are assets that contain a set of common settings like colors or sound files."
+                        + "\n\nThose settings can be shared and used by any objects that keep a reference to the profile."
+                        + "\n\nThey make changing the style of a set of objects quicker and easier, and they reduce memory usage."
+                        + "\n\nA purple icon indicates that you're looking at a profile asset."
+                        + "\n\nFor more information please see the documentation at:"
+                        + "\n https://github.com/Microsoft/MRDesignLabs_Unity/"
+                        , "OK");
         }
 
         public static T CreateProfile<T>(Type profileType) where T : ButtonProfile
@@ -153,6 +177,40 @@ namespace HUX
 
             //draw the object field so people can click it
             obj = (T)EditorGUILayout.ObjectField(obj, typeof(T), true);
+            EditorGUILayout.EndHorizontal();
+
+            return obj;
+        }
+
+        public static GameObject DropDownGameObjectField(string label, GameObject obj, Transform transform)
+        {
+            Transform[] optionObjects = transform.GetComponentsInChildren<Transform>(true);
+            int selectedIndex = 0;
+            string[] options = new string[optionObjects.Length + 1];
+            options[0] = "(None)";
+            for (int i = 0; i < optionObjects.Length; i++)
+            {
+                options[i + 1] = optionObjects[i].name;
+                if (obj == optionObjects[i].gameObject)
+                {
+                    selectedIndex = i + 1;
+                }
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            int newIndex = EditorGUILayout.Popup(label, selectedIndex, options);
+            if (newIndex == 0)
+            {
+                // Zero means '(None)'
+                obj = null;
+            }
+            else
+            {
+                obj = optionObjects[newIndex - 1].gameObject;
+            }
+
+            //draw the object field so people can click it
+            obj = (GameObject)EditorGUILayout.ObjectField(obj, typeof(GameObject), true);
             EditorGUILayout.EndHorizontal();
 
             return obj;
@@ -420,7 +478,7 @@ namespace HUX
 
         public static void BeginProfileBox()
         {
-            GUI.color = HUXEditorUtils.WarningColor;
+            GUI.color = HUXEditorUtils.ProfileColor;
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             DrawSubtleMiniLabel("Profile" + ":");
             DrawSubtleMiniLabel("(Warning: this section edits the button profile. These changes will affect all buttons that use this profile.)");
@@ -429,6 +487,18 @@ namespace HUX
         public static void EndProfileBox()
         {
             EndSectionBox();
+        }
+
+        public static void ArrayField (SerializedObject serializedObject, string fieldName)
+        {
+            SerializedProperty tps = serializedObject.FindProperty(fieldName);
+            if (tps != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(tps, true);
+                if (EditorGUI.EndChangeCheck())
+                    serializedObject.ApplyModifiedProperties();
+            }
         }
 
         public static void BeginSectionBox(string label)
@@ -535,29 +605,13 @@ namespace HUX
             GUILayout.Box("", styleHR);
         }
 
-        public static void SaveChanges(UnityEngine.Object target)
-        {
+        public static void SaveChanges(UnityEngine.Object target, SerializedObject serializedObject) {
             if (Application.isPlaying)
                 return;
 
-            if (GUI.changed)
-            {
-                EditorUtility.SetDirty(target);
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            }
-        }
-
-        public static void SaveChanges(UnityEngine.Object target1, UnityEngine.Object target2)
-        {
-            if (Application.isPlaying)
-                return;
-
-            if (GUI.changed)
-            {
-                EditorUtility.SetDirty(target1);
-                EditorUtility.SetDirty(target2);
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            }
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         }
 
         public static string[] getMethodOptions(GameObject comp, List<System.Type> ignoreTypes = null)

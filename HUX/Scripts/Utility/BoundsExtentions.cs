@@ -3,7 +3,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 //
 using UnityEngine;
-using System.Collections;
 
 public static class BoundsExtentions
 {
@@ -33,7 +32,34 @@ public static class BoundsExtentions
     public const int RBF_RBB = 16;
     public const int RTF_RTB = 17;
     public const int LBF_LBB = 18;
-    public const int LTF_LTB = 19;    
+    public const int LTF_LTB = 19;
+
+    // 2D corners
+    public const int LT = 0;
+    public const int LB = 1;
+    public const int RT = 2;
+    public const int RB = 3;
+
+    // 2D midpoints
+    public const int LT_RT = 4;
+    public const int RT_RB = 5;
+    public const int RB_LB = 6;
+    public const int LB_LT = 7;
+
+    // Face points
+    public const int TOP = 0;
+    public const int BOT = 1;
+    public const int LFT = 2;
+    public const int RHT = 3;
+    public const int FWD = 4;
+    public const int BCK = 5;
+
+    public enum Axis
+    {
+        X,
+        Y,
+        Z
+    }
 
     #region Public Static Functions
     /// <summary>
@@ -126,6 +152,30 @@ public static class BoundsExtentions
         positions[BoundsExtentions.RTB] = new Vector3(rightEdge, topEdge, backEdge);
     }
 
+    public static void GetFacePositions(this Bounds bounds, Transform transform, ref Vector3[] positions)
+    {
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        const int numPoints = 6;
+        if (positions == null || positions.Length != numPoints)
+        {
+            positions = new Vector3[numPoints];
+        }
+
+        positions[BoundsExtentions.TOP] = transform.TransformPoint (center + Vector3.up * extents.y);
+        positions[BoundsExtentions.BOT] = transform.TransformPoint(center + Vector3.down * extents.y);
+        positions[BoundsExtentions.LFT] = transform.TransformPoint(center + Vector3.left * extents.x);
+        positions[BoundsExtentions.RHT] = transform.TransformPoint(center + Vector3.right * extents.x);
+        positions[BoundsExtentions.FWD] = transform.TransformPoint(center + Vector3.forward * extents.z);
+        positions[BoundsExtentions.BCK] = transform.TransformPoint(center + Vector3.back * extents.z);
+    }
+
+    /// <summary>
+    /// Gets all the corner points and mid points from Renderer's Bounds
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <param name="positions"></param>
     public static void GetCornerAndMidPointPositions (this Bounds bounds, Transform transform, ref Vector3[] positions)
     {
         // Calculate the local points to transform.
@@ -169,6 +219,75 @@ public static class BoundsExtentions
         positions[BoundsExtentions.RTF_RTB] = Vector3.Lerp(positions[BoundsExtentions.RTF], positions[BoundsExtentions.RTB], 0.5f);
         positions[BoundsExtentions.LBF_LBB] = Vector3.Lerp(positions[BoundsExtentions.LBF], positions[BoundsExtentions.LBB], 0.5f);
         positions[BoundsExtentions.LTF_LTB] = Vector3.Lerp(positions[BoundsExtentions.LTF], positions[BoundsExtentions.LTB], 0.5f);
+    }
+
+    /// <summary>
+    /// Gets all the corner points and mid points from Renderer's Bounds, ignoring the z axis
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <param name="positions"></param>
+    public static void GetCornerAndMidPointPositions2D(this Bounds bounds, Transform transform, ref Vector3[] positions, Axis flattenAxis)
+    {
+        // Calculate the local points to transform.
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        float leftEdge = 0;
+        float rightEdge = 0;
+        float bottomEdge = 0;
+        float topEdge = 0;
+
+        // Allocate the array if needed.
+        const int numPoints = BoundsExtentions.LB_LT + 1;
+        if (positions == null || positions.Length != numPoints)
+        {
+            positions = new Vector3[numPoints];
+        }
+
+        switch (flattenAxis)
+        {
+            case Axis.X:
+            default:
+                leftEdge = center.z - extents.z;
+                rightEdge = center.z + extents.z;
+                bottomEdge = center.y - extents.y;
+                topEdge = center.y + extents.y;
+                // Transform all the local points to world space.
+                positions[BoundsExtentions.LT] = transform.TransformPoint(0, topEdge, leftEdge);
+                positions[BoundsExtentions.LB] = transform.TransformPoint(0, bottomEdge, leftEdge);
+                positions[BoundsExtentions.RT] = transform.TransformPoint(0, topEdge, rightEdge);
+                positions[BoundsExtentions.RB] = transform.TransformPoint(0, bottomEdge, rightEdge);
+                break;
+
+            case Axis.Y:
+                leftEdge = center.z - extents.z;
+                rightEdge = center.z + extents.z;
+                bottomEdge = center.x - extents.x;
+                topEdge = center.x + extents.x;
+                // Transform all the local points to world space.
+                positions[BoundsExtentions.LT] = transform.TransformPoint(topEdge, 0, leftEdge);
+                positions[BoundsExtentions.LB] = transform.TransformPoint(bottomEdge, 0, leftEdge);
+                positions[BoundsExtentions.RT] = transform.TransformPoint(topEdge, 0, rightEdge);
+                positions[BoundsExtentions.RB] = transform.TransformPoint(bottomEdge, 0, rightEdge);
+                break;
+
+            case Axis.Z:
+                leftEdge = center.x - extents.x;
+                rightEdge = center.x + extents.x;
+                bottomEdge = center.y - extents.y;
+                topEdge = center.y + extents.y;
+                // Transform all the local points to world space.
+                positions[BoundsExtentions.LT] = transform.TransformPoint(leftEdge, topEdge, 0);
+                positions[BoundsExtentions.LB] = transform.TransformPoint(leftEdge, bottomEdge, 0);
+                positions[BoundsExtentions.RT] = transform.TransformPoint(rightEdge, topEdge, 0);
+                positions[BoundsExtentions.RB] = transform.TransformPoint(rightEdge, bottomEdge, 0);
+                break;
+        }
+
+        positions[BoundsExtentions.LT_RT] = Vector3.Lerp(positions[BoundsExtentions.LT], positions[BoundsExtentions.RT], 0.5f);
+        positions[BoundsExtentions.RT_RB] = Vector3.Lerp(positions[BoundsExtentions.RT], positions[BoundsExtentions.RB], 0.5f);
+        positions[BoundsExtentions.RB_LB] = Vector3.Lerp(positions[BoundsExtentions.RB], positions[BoundsExtentions.LB], 0.5f);
+        positions[BoundsExtentions.LB_LT] = Vector3.Lerp(positions[BoundsExtentions.LB], positions[BoundsExtentions.LT], 0.5f);
     }
 
     /// <summary>

@@ -30,6 +30,10 @@ namespace HUX.Interaction
         [HideInInspector]
         public BoundingBoxManipulate.OperationEnum PermittedOperations = BoundingBoxManipulate.OperationEnum.Drag | BoundingBoxManipulate.OperationEnum.ScaleUniform | BoundingBoxManipulate.OperationEnum.RotateY;
 
+        public BoundingBoxManipulate.FlattenModeEnum FlattenPreference = BoundingBox.FlattenModeEnum.FlattenAuto;
+
+        public BoundingBox.BoundsCalculationMethodEnum BoundsCalculationMethod = BoundingBox.BoundsCalculationMethodEnum.RendererBounds;
+
         /// <summary>
         /// Whether to show the manipulation display when the bounding box targets this object
         /// </summary>
@@ -87,18 +91,23 @@ namespace HUX.Interaction
             }
 
             // If we've already got a bounding box and it's pointing to us, do nothing
-            if (boundingBox != null && boundingBox.Target == this.gameObject)
+            if (boundingBox != null && boundingBox.gameObject.activeSelf && boundingBox.Target == this.gameObject)
                 return;
-            
+
             // Set the bounding box's target and permitted operations
             boundingBox.PermittedOperations = PermittedOperations;
+            boundingBox.FlattenPreference = FlattenPreference;
             boundingBox.Target = gameObject;
-            
+            boundingBox.BoundsMethodOverride = BoundsCalculationMethod;
+            boundingBox.gameObject.SetActive(true);
+
             if (ShowAppBar)
             {
                 // Show it and set its bounding box object
                 toolbar.BoundingBox = boundingBox;
                 toolbar.Reset();
+                toolbar.gameObject.SetActive(true);
+
             } else if (toolbar != null)
             {
                 // Set its bounding box to null to hide it

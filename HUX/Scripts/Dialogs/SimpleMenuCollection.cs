@@ -34,12 +34,40 @@ namespace HUX.Dialogs
             }
         }
 
+        public string Title
+        {
+            get
+            {
+                return TitleText.text;
+            }
+            set
+            {
+                TitleText.text = value;
+            }
+        }
+
+        public bool DisplayTitle
+        {
+            get
+            {
+                return TitleText.gameObject.activeSelf;
+            }
+            set
+            {
+                TitleText.gameObject.SetActive(value);
+            }
+        }
+
+        public TextMesh TitleText;
+
         [SerializeField]
         private ObjectCollection parentCollection;
 
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         public override void EditorRefreshButtons()
         {
+            base.EditorRefreshButtons();
+
             int buttonIndex = 0;
             for (int i = 0; i < buttons.Length; i++)
             {
@@ -54,7 +82,8 @@ namespace HUX.Dialogs
                 }
             }
         }
-#endif
+        #endif
+
         protected override void OnEnable()
         {
             // Set the button parent to the collection

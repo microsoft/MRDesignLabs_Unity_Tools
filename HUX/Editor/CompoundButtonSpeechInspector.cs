@@ -17,7 +17,7 @@ namespace HUX
             bool microphoneEnabled = PlayerSettings.WSA.GetCapability(PlayerSettings.WSACapability.Microphone);
             if (!microphoneEnabled) {
                 HUXEditorUtils.WarningMessage("Microphone capability not present. Speech recognition will be disabled.", "Enable Microphone Capability", EnableMicrophone);
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace HUX
             }
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(target);
+           HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         private void EnableMicrophone() {

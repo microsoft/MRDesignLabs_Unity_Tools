@@ -85,7 +85,7 @@ namespace HUX
 
             HUXEditorUtils.EndProfileBox();
 
-            HUXEditorUtils.SaveChanges(this);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }

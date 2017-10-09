@@ -25,6 +25,9 @@ namespace HUX
 
             HUXEditorUtils.BeginSectionBox("Menu settings");
 
+            menu.MaxButtons = EditorGUILayout.IntSlider("Num buttons", menu.MaxButtons, 1, 64);
+            HUXEditorUtils.WarningMessage("Changing the number of buttons will erase existing buttons");
+
             menu.DisplayTitle = EditorGUILayout.Toggle("Display Title", menu.DisplayTitle);
             if (menu.DisplayTitle) {
                 //menu.TitleText.font = (Font)EditorGUILayout.ObjectField("Title font", menu.TitleText.font, typeof(Font), false);
@@ -64,7 +67,7 @@ namespace HUX
             }
 
             HUXEditorUtils.BeginSubSectionBox("Buttons");
-            HUXEditorUtils.DrawSubtleMiniLabel("Up to " + SimpleMenuCollection.MaxButtons + " allowed. Un-named buttons will be ignored.");
+            HUXEditorUtils.DrawSubtleMiniLabel("Up to " + menu.MaxButtons + " allowed. Un-named buttons will be ignored.");
 
             SimpleMenuCollectionButton[] buttons = menu.Buttons;
             HashSet<string> buttonNamesSoFar = new HashSet<string>();
@@ -103,7 +106,7 @@ namespace HUX
 
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(menu);
+            HUXEditorUtils.SaveChanges(target, serializedObject);
         }
 
         private void AddCollection ()

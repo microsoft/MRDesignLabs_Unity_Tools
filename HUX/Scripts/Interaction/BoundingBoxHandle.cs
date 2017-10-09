@@ -36,10 +36,35 @@ namespace HUX.Buttons
             Rotate_RTF_RTB = BoundsExtentions.RTF_RTB,
             Rotate_LBF_LBB = BoundsExtentions.LBF_LBB,
             Rotate_LTF_LTB = BoundsExtentions.LTF_LTB,
+
             Drag,
+
+            None,
+        }
+
+        public enum HandleTypeFlattenedEnum
+        {
+            Scale_LT = BoundsExtentions.LT,
+            Scale_RT = BoundsExtentions.RT,
+            Scale_LB = BoundsExtentions.LB,
+            Scale_RB = BoundsExtentions.RB,
+
+            Rotate_LT_RT = BoundsExtentions.LT_RT,
+            Rotate_RT_RB = BoundsExtentions.RT_RB,
+            Rotate_RB_LB = BoundsExtentions.RB_LB,
+            Rotate_LB_LT = BoundsExtentions.LB_LT,
+
+            Drag,
+
+            None,
         }
 
         public HandleTypeEnum HandleType;
+
+        /// <summary>
+        /// When the bounding box is flattened
+        /// </summary>
+        public HandleTypeFlattenedEnum HandleTypeFlattened = HandleTypeFlattenedEnum.None;
 
         /// <summary>
         /// The handle on the opposite side of the bounding box
@@ -50,8 +75,111 @@ namespace HUX.Buttons
 
         void OnEnable()
         {
-            name = HandleType.ToString();
-            transform.localPosition = GetHandlePositionFromType(HandleType);
+            if (HandleTypeFlattened != HandleTypeFlattenedEnum.None)
+            {
+                name = HandleTypeFlattened.ToString();
+                transform.localPosition = GetHandlePositionFromType(HandleTypeFlattened, BoundsExtentions.Axis.X);
+            }
+            else
+            {
+                name = HandleType.ToString();
+                transform.localPosition = GetHandlePositionFromType(HandleType);
+            }
+        }
+
+        /// <summary>
+        /// Updates the position of the handle based on the flattened axis (if applicable)
+        /// </summary>
+        /// <param name="axis"></param>
+        public void RefreshFlattenedPosition (BoundsExtentions.Axis axis)
+        {
+            if (HandleTypeFlattened != HandleTypeFlattenedEnum.None)
+                transform.localPosition = GetHandlePositionFromType(HandleTypeFlattened, axis);
+        }
+
+        /// <summary>
+        /// Convenience function used to correctly place handles.
+        /// Helps prevent prefab corruption.
+        /// </summary>
+        /// <param name="flattenedType"></param>
+        /// <param name="axis"></param>
+        /// <returns></returns>
+        public static Vector3 GetHandlePositionFromType(HandleTypeFlattenedEnum flattenedType, BoundsExtentions.Axis axis)
+        {
+            float left = 0f;
+            float right = 0f;
+
+            switch (flattenedType)
+            {
+                case HandleTypeFlattenedEnum.None:
+                default:
+                    break;
+
+                case HandleTypeFlattenedEnum.Scale_LT:
+                    left = -0.5f;
+                    right = 0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Scale_LB:
+                    left = -0.5f;
+                    right = -0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Scale_RT:
+                    left = 0.5f;
+                    right = 0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Scale_RB:
+                    left = 0.5f;
+                    right = -0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Rotate_LT_RT:
+                    left = 0.0f;
+                    right = 0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Rotate_RT_RB:
+                    left = 0.5f;
+                    right = 0.0f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Rotate_RB_LB:
+                    left = 0.0f;
+                    right = -0.5f;
+                    break;
+
+                case HandleTypeFlattenedEnum.Rotate_LB_LT:
+                    left = -0.5f;
+                    right = 0.0f;
+                    break;
+            }
+
+            Vector3 newPos = Vector3.zero;
+
+            switch (axis)
+            {
+                case BoundsExtentions.Axis.X:
+                    newPos.x = 0;
+                    newPos.y = left;
+                    newPos.z = right;
+                    break;
+
+                case BoundsExtentions.Axis.Y:
+                    newPos.x = left;
+                    newPos.y = 0;
+                    newPos.z = right;
+                    break;
+
+                case BoundsExtentions.Axis.Z:
+                    newPos.x = left;
+                    newPos.y = right;
+                    newPos.z = 0;
+                    break;
+            }
+
+            return newPos;
         }
 
         /// <summary>
@@ -191,7 +319,6 @@ namespace HUX.Buttons
                     y = 0.0f;
                     z = -0.5f;
                     break;
-
             }
 
             return new Vector3(x, y, z);
@@ -254,23 +381,97 @@ namespace HUX.Buttons
             }
         }
 
+        /// <summary>
+        /// Convenience function to get an opposing handle
+        /// This could be done by assigning an inspector value but this is cleaner
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static HandleTypeFlattenedEnum GetOpposingHandle(HandleTypeFlattenedEnum type)
+        {
+            switch (type)
+            {
+                case HandleTypeFlattenedEnum.Drag:
+                default:
+                    // Only type with no opposite
+                    return HandleTypeFlattenedEnum.Drag;
+
+                case HandleTypeFlattenedEnum.Scale_LB:
+                    return HandleTypeFlattenedEnum.Scale_RT;
+
+                case HandleTypeFlattenedEnum.Scale_LT:
+                    return HandleTypeFlattenedEnum.Scale_RB;
+
+                case HandleTypeFlattenedEnum.Scale_RT:
+                    return HandleTypeFlattenedEnum.Scale_LB;
+
+                case HandleTypeFlattenedEnum.Scale_RB:
+                    return HandleTypeFlattenedEnum.Scale_LT;
+
+                case HandleTypeFlattenedEnum.Rotate_LB_LT:
+                    return HandleTypeFlattenedEnum.Rotate_RT_RB;
+
+                case HandleTypeFlattenedEnum.Rotate_LT_RT:
+                    return HandleTypeFlattenedEnum.Rotate_RB_LB;
+
+                case HandleTypeFlattenedEnum.Rotate_RB_LB:
+                    return HandleTypeFlattenedEnum.Rotate_LT_RT;
+
+                case HandleTypeFlattenedEnum.Rotate_RT_RB:
+                    return HandleTypeFlattenedEnum.Rotate_LB_LT;
+            }
+        }
+
         #if UNITY_EDITOR
         void OnDrawGizmos ()
         {
+            if (Application.isPlaying)
+                return;
+
+            if (HandleTypeFlattened == HandleTypeFlattenedEnum.Drag)
+            {
+                HandleType = HandleTypeEnum.Drag;
+                return;
+            }
+
             if (UnityEditor.Selection.activeGameObject == gameObject)
             {
-                BoundingBoxHandle [] bbhs = GameObject.FindObjectsOfType<BoundingBoxHandle>();
-                HandleTypeEnum oppositeHandle = GetOpposingHandle(HandleType);
-                foreach (BoundingBoxHandle bbh in bbhs)
+                BoundingBoxHandle[] bbhs = transform.parent.GetComponentsInChildren<BoundingBoxHandle>(true);
+                if (HandleTypeFlattened != HandleTypeFlattenedEnum.None)
                 {
-                    if (bbh.HandleType == oppositeHandle)
+                    HandleType = HandleTypeEnum.None;
+                    name = HandleTypeFlattened.ToString();
+                    HandleTypeFlattenedEnum oppositeHandle = GetOpposingHandle(HandleTypeFlattened);
+                    foreach (BoundingBoxHandle bbh in bbhs)
                     {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawSphere(transform.position, 0.025f);
-                        Gizmos.DrawLine(transform.position, bbh.transform.position);
-                        break;
+                        if (bbh.HandleTypeFlattened == oppositeHandle)
+                        {
+                            Gizmos.color = Color.red;
+                            Gizmos.DrawSphere(transform.position, 0.025f);
+                            Gizmos.DrawLine(transform.position, bbh.transform.position);
+                            break;
+                        }
                     }
-                }                    
+
+                    transform.localPosition = GetHandlePositionFromType(HandleTypeFlattened, BoundsExtentions.Axis.Y);
+                }
+                else
+                {
+                    name = HandleType.ToString();
+                    HandleTypeEnum oppositeHandle = GetOpposingHandle(HandleType);
+                    foreach (BoundingBoxHandle bbh in bbhs)
+                    {
+                        if (bbh.HandleType == oppositeHandle)
+                        {
+                            Gizmos.color = Color.red;
+                            Gizmos.DrawSphere(transform.position, 0.025f);
+                            Gizmos.DrawLine(transform.position, bbh.transform.position);
+                            break;
+                        }
+                    }
+
+                    transform.localPosition = GetHandlePositionFromType(HandleType);
+                }
             }
         }
         #endif

@@ -24,7 +24,7 @@ namespace HUX
             if (toggle.Target == null) {
                 HUXEditorUtils.ErrorMessage("Target must be set.");
                 HUXEditorUtils.EndSectionBox();
-                HUXEditorUtils.SaveChanges(target);
+               HUXEditorUtils.SaveChanges(target, serializedObject);
                 return;
             } else {
 
@@ -33,7 +33,7 @@ namespace HUX
                 if (fieldInfo == null) {
                     HUXEditorUtils.ErrorMessage("Target component has no 'Profile' field - are you use this class inherits from ProfileButtonBase?");
                     HUXEditorUtils.EndSectionBox();
-                    HUXEditorUtils.SaveChanges(target);
+                   HUXEditorUtils.SaveChanges(target, serializedObject);
                     return;
                 }
 
@@ -86,7 +86,7 @@ namespace HUX
             }
             HUXEditorUtils.EndSectionBox();
 
-            HUXEditorUtils.SaveChanges(target);
+           HUXEditorUtils.SaveChanges(target, serializedObject);
         }
     }
 }
