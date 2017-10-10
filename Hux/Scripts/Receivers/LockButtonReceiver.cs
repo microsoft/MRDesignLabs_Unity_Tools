@@ -4,7 +4,7 @@ using UnityEngine;
 using HUX.Interaction;
 using HUX.Receivers;
 
-public class LockButtonreciever : InteractionReceiver
+public class LockButtonReceiver : InteractionReceiver
 {
     public ManipulationManager manipulationManager;
 
