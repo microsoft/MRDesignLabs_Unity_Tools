@@ -4,7 +4,7 @@ This repo is where Microsoft's Windows Mixed Reality Design team publishes the U
 # Including as a SubModule
 The simplest way to add the tools to your project is via a submodule.  This will create and internal link within your repo to the *MRDesignLab* set of tools.
 
-To do this simple navigate to your Assets folder in your project and use:
+To do this simply navigate to your Assets folder in your project and use:
  * git submodule add https://github.com/Microsoft/MRDesignLabs_Unity_Tools.git ./MRDesignLab
  
 This will create the submodule for Mixed Reality Design Labs Unity tools and allow you to stay up to date with changes to the base toolset or decide not to integrate newer changes.
