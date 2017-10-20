@@ -8,43 +8,44 @@ using HUX.Cursors;
 using HUX.Utility;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System;
 
 namespace HUX.Focus
 {
-	public abstract class AFocuser : MonoBehaviour
-	{
-		//--------------------------------------------------------------------------------------
+    public abstract class AFocuser : MonoBehaviour
+    {
+        //--------------------------------------------------------------------------------------
 
-		#region Private Variables
-		/// <summary>
-		/// The maximum expected number of hits when we do a raycast.
-		/// </summary>
-		protected const int ExpectedMaxRaycasts = 64;
+        #region Private Variables
+        /// <summary>
+        /// The maximum expected number of hits when we do a raycast.
+        /// </summary>
+        protected const int ExpectedMaxRaycasts = 64;
 
-		/// <summary>
-		/// A pool of Focus Info so that we do not recreate them each frame.
-		/// </summary>
-		protected NewableObjectPool<FocusInfo> m_FocusInfoPool = new NewableObjectPool<FocusInfo>(ExpectedMaxRaycasts);
+        /// <summary>
+        /// A pool of Focus Info so that we do not recreate them each frame.
+        /// </summary>
+        protected NewableObjectPool<FocusInfo> m_FocusInfoPool = new NewableObjectPool<FocusInfo>(ExpectedMaxRaycasts);
 
-		/// <summary>
-		/// A list for tracking hits with the focus ray.
-		/// </summary>
-		protected List<FocusInfo> m_FocusedItems = new List<FocusInfo>(ExpectedMaxRaycasts);
+        /// <summary>
+        /// A list for tracking hits with the focus ray.
+        /// </summary>
+        protected List<FocusInfo> m_FocusedItems = new List<FocusInfo>(ExpectedMaxRaycasts);
 
-		/// <summary>
-		/// The raycast hit array for the focus ray.  This is to avoid memory allocations each frame.
-		/// </summary>
-		protected RaycastHit[] m_ColliderRaycastHits = new RaycastHit[ExpectedMaxRaycasts];
+        /// <summary>
+        /// The raycast hit array for the focus ray.  This is to avoid memory allocations each frame.
+        /// </summary>
+        protected RaycastHit[] m_ColliderRaycastHits = new RaycastHit[ExpectedMaxRaycasts];
 
-		/// <summary>
-		/// A list of raycast hit results for the Unity UI system
-		/// </summary>
-		protected List<UnityEngine.EventSystems.RaycastResult> m_UIRaycastResults = new List<UnityEngine.EventSystems.RaycastResult>();
+        /// <summary>
+        /// A list of raycast hit results for the Unity UI system
+        /// </summary>
+        protected List<UnityEngine.EventSystems.RaycastResult> m_UIRaycastResults = new List<UnityEngine.EventSystems.RaycastResult>();
 
-		/// <summary>
-		/// The Unity UI event systems pointer data.
-		/// </summary>
-		private WorldGraphicsRaycaster.RayEventData m_PointerData;
+        /// <summary>
+        /// The Unity UI event systems pointer data.
+        /// </summary>
+        private WorldGraphicsRaycaster.RayEventData m_PointerData;
 
         /// <summary>
 		/// The game object that focus has been locked to by calls to LockFocus
@@ -53,17 +54,25 @@ namespace HUX.Focus
 
         protected bool m_IsManipulating = false;
 
-		protected Transform m_ManipulationTransform = null;
-		#endregion
+        protected Transform m_ManipulationTransform = null;
 
-		//--------------------------------------------------------------------------------------
+        /// <summary>
+        /// Custom array of focus RaySteps, useful for curved pointers
+        /// If set, these will be used in place of the default focus RayStep
+        /// The RayStep that produces a hit will be set to FocusRay
+        /// If no RayStep produces a hit, FocusRay will be last RayStep in array
+        /// </summary>
+        protected RayStep[] customFocusRays = null;
+        #endregion
 
-		#region Object Accessors
+        //--------------------------------------------------------------------------------------
 
-		/// <summary>
-		/// The cursor for this focuser.
-		/// </summary>
-		public HUX.Cursors.Cursor Cursor { get; protected set; }
+        #region Object Accessors
+
+        /// <summary>
+        /// The cursor for this focuser.
+        /// </summary>
+        public HUX.Cursors.Cursor Cursor { get; protected set; }
 
         /// <summary>
         /// The cursor prefab for this focuser.
@@ -75,154 +84,154 @@ namespace HUX.Focus
         /// The animated cursor for this focuser.
         /// </summary>
         public StateWidget AnimatedCursor
-		{
-			get
-			{
-				AnimCursor cursor = Cursor.GetComponent<AnimCursor>();
-				return cursor ? cursor.GetWidgetByName("Organize") as StateWidget : null;
-			}
-		}
+        {
+            get
+            {
+                AnimCursor cursor = Cursor.GetComponent<AnimCursor>();
+                return cursor ? cursor.GetWidgetByName("Organize") as StateWidget : null;
+            }
+        }
 
-		#endregion
+        #endregion
 
-		//--------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------
 
-		#region Focus Objects Accessors
+        #region Focus Objects Accessors
 
-		/// <summary>
-		/// Position of the user's gaze.
-		/// </summary>
-		public Vector3 Position { get; protected set; }
+        /// <summary>
+        /// Position of the user's gaze.
+        /// </summary>
+        public Vector3 Position { get; protected set; }
 
-		/// <summary>
-		/// RaycastHit Normal direction.
-		/// </summary>
-		public Vector3 Normal { get; protected set; }
+        /// <summary>
+        /// RaycastHit Normal direction.
+        /// </summary>
+        public Vector3 Normal { get; protected set; }
 
-		/// <summary>
-		/// Physics.Raycast result is true if it hits a Hologram.
-		/// </summary>
-		public bool Hit { get; protected set; }
+        /// <summary>
+        /// Physics.Raycast result is true if it hits a Hologram.
+        /// </summary>
+        public bool Hit { get; protected set; }
 
-		/// <summary>
-		/// FocusHitInfo property gives access
-		/// to FocusInfo public members.
-		/// </summary>
-		public FocusInfo FocusHitInfo { get; protected set; }
+        /// <summary>
+        /// FocusHitInfo property gives access
+        /// to FocusInfo public members.
+        /// </summary>
+        public FocusInfo FocusHitInfo { get; protected set; }
 
-		/// <summary>
-		/// FocusRay property gives access
-		/// to Ray public members.
-		/// </summary>
-		public Ray FocusRay { get; protected set; }
+        /// <summary>
+        /// FocusRay property gives access
+        /// to Ray public members.
+        /// </summary>
+        public RayStep FocusRay { get; protected set; }
 
-		/// <summary>
-		/// The Game Object of the current Prime Focus.
-		/// </summary>
-		public GameObject PrimeFocus { get; protected set; }
+        /// <summary>
+        /// The Game Object of the current Prime Focus.
+        /// </summary>
+        public GameObject PrimeFocus { get; protected set; }
 
-		/// <summary>
-		/// The Game Object of the current Prime Focus.
-		/// </summary>
-		public GameObject OldPrimeFocus { get; protected set; }
+        /// <summary>
+        /// The Game Object of the current Prime Focus.
+        /// </summary>
+        public GameObject OldPrimeFocus { get; protected set; }
 
-		/// <summary>
-		/// The Selectable UI object.
-		/// </summary>
-		public GameObject UIInteractibleFocus { get; protected set; }
+        /// <summary>
+        /// The Selectable UI object.
+        /// </summary>
+        public GameObject UIInteractibleFocus { get; protected set; }
 
-		/// <summary>
-		/// The Selectable UI object.
-		/// </summary>
-		public GameObject OldUIInteractibleFocus { get; protected set; }
+        /// <summary>
+        /// The Selectable UI object.
+        /// </summary>
+        public GameObject OldUIInteractibleFocus { get; protected set; }
 
-		/// <summary>
-		/// The list of objects being focused on.
-		/// </summary>
-		public List<GameObject> FocusList { get; protected set; }
+        /// <summary>
+        /// The list of objects being focused on.
+        /// </summary>
+        public List<GameObject> FocusList { get; protected set; }
 
-		/// <summary>
-		/// The list of objects that have lost focus this frame.
-		/// </summary>
-		public List<GameObject> FocusExitList { get; protected set; }
+        /// <summary>
+        /// The list of objects that have lost focus this frame.
+        /// </summary>
+        public List<GameObject> FocusExitList { get; protected set; }
 
-		/// <summary>
-		/// The list of objects that have gained focus this frame.
-		/// </summary>
-		public List<GameObject> FocusEnterList { get; protected set; }
+        /// <summary>
+        /// The list of objects that have gained focus this frame.
+        /// </summary>
+        public List<GameObject> FocusEnterList { get; protected set; }
 
-		/// <summary>
-		/// Return true if the focuser is flagged as manipulating an object.
-		/// </summary>
-		public bool IsManipulating
-		{
-			get
-			{
-				return m_IsManipulating;
-			}
-		}
-		#endregion
+        /// <summary>
+        /// Return true if the focuser is flagged as manipulating an object.
+        /// </summary>
+        public bool IsManipulating
+        {
+            get
+            {
+                return m_IsManipulating;
+            }
+        }
+        #endregion
 
-		//--------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------
 
-		#region Abstract Accessors
+        #region Abstract Accessors
 
-		/// <summary>
-		/// The world origin of the targeting ray
-		/// </summary>
-		public abstract Vector3 TargetOrigin { get; }
+        /// <summary>
+        /// The world origin of the targeting ray
+        /// </summary>
+        public abstract Vector3 TargetOrigin { get; }
 
-		/// <summary>
-		/// The forward direction of the targeting ray
-		/// </summary>
-		public abstract Vector3 TargetDirection { get; }
+        /// <summary>
+        /// The forward direction of the targeting ray
+        /// </summary>
+        public abstract Vector3 TargetDirection { get; }
 
-		/// <summary>
-		/// The orientation of the focuser.
-		/// </summary>
-		public abstract Quaternion TargetOrientation { get; }
+        /// <summary>
+        /// The orientation of the focuser.
+        /// </summary>
+        public abstract Quaternion TargetOrientation { get; }
 
-		/// <summary>
-		/// Returns true if the select button for this focuser is held down.
-		/// </summary>
-		public abstract bool IsSelectPressed { get; }
+        /// <summary>
+        /// Returns true if the select button for this focuser is held down.
+        /// </summary>
+        public abstract bool IsSelectPressed { get; }
 
-		/// <summary>
-		/// Return true if the focuser is ready to interact. (For example if the ready gesture is detected on a hololens hand.)
-		/// </summary>
-		public abstract bool IsInteractionReady { get; }
+        /// <summary>
+        /// Return true if the focuser is ready to interact. (For example if the ready gesture is detected on a hololens hand.)
+        /// </summary>
+        public abstract bool IsInteractionReady { get; }
 
-		/// <summary>
-		/// Return true if this focuser allow for interaction and should be used for the main focus list.
-		/// </summary>
-		public abstract bool CanInteract { get; }
+        /// <summary>
+        /// Return true if this focuser allow for interaction and should be used for the main focus list.
+        /// </summary>
+        public abstract bool CanInteract { get; }
 
-		#endregion
+        #endregion
 
-		//--------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------
 
-		#region Monobehaviour Functions
-		protected virtual void Awake()
-		{
-			FocusList = new List<GameObject>();
-			FocusExitList = new List<GameObject>();
-			FocusEnterList = new List<GameObject>();
-			FocusHitInfo = new FocusInfo();
+        #region Monobehaviour Functions
+        protected virtual void Awake()
+        {
+            FocusList = new List<GameObject>();
+            FocusExitList = new List<GameObject>();
+            FocusEnterList = new List<GameObject>();
+            FocusHitInfo = new FocusInfo();
 
-            if(CursorPrefab != null)
+            if (CursorPrefab != null)
             {
                 SetCursor(CursorPrefab);
             }
 
         }
 
-		protected virtual void Update()
-		{
-			if (m_IsManipulating && !IsSelectPressed)
-			{
-				this.StopManipulation();
-			}
-		}
+        protected virtual void Update()
+        {
+            if (m_IsManipulating && !IsSelectPressed)
+            {
+                this.StopManipulation();
+            }
+        }
 
         #endregion
 
@@ -262,32 +271,32 @@ namespace HUX.Focus
         /// </summary>
         /// <param name="cursorPrefab">The prefab to instantiate.</param>
         public void SetCursor(HUX.Cursors.Cursor cursorPrefab)
-		{
-			Vector3 currentPosition = Vector3.zero;
-			if (Cursor != null)
-			{
-				currentPosition = Cursor.transform.position;
-				DestroyObject(Cursor.gameObject);
-				Cursor = null;
-			}
+        {
+            Vector3 currentPosition = Vector3.zero;
+            if (Cursor != null)
+            {
+                currentPosition = Cursor.transform.position;
+                DestroyObject(Cursor.gameObject);
+                Cursor = null;
+            }
 
-			//Create the cursor and give ourselves to it as reference.
-			if (cursorPrefab != null)
-			{
-				Cursor = GameObject.Instantiate(cursorPrefab);
-				Cursor.SetFocuser(this);
-				Cursor.transform.position = currentPosition;
-			}
-		}
+            //Create the cursor and give ourselves to it as reference.
+            if (cursorPrefab != null)
+            {
+                Cursor = GameObject.Instantiate(cursorPrefab);
+                Cursor.SetFocuser(this);
+                Cursor.transform.position = currentPosition;
+            }
+        }
 
-		/// <summary>
-		/// Sets if the cursor is visible.
-		/// </summary>
-		/// <param name="bActive"></param>
-		public void SetCursorActive(bool bActive)
-		{
-			Cursor.gameObject.SetActive(bActive);
-		}
+        /// <summary>
+        /// Sets if the cursor is visible.
+        /// </summary>
+        /// <param name="bActive"></param>
+        public void SetCursorActive(bool bActive)
+        {
+            Cursor.gameObject.SetActive(bActive);
+        }
 
 
 		/// <summary>
@@ -332,106 +341,129 @@ namespace HUX.Focus
 		/// <summary>
 		/// Calculates the Focus hit position and normal.
 		/// </summary>
-		public void UpdateRaycast()
+		public virtual void UpdateRaycast()
 		{
 			OnPreRaycast();
 
-			Hit = false;
-			FocusInfo hitInfo = null;
-			FocusRay = new Ray(TargetOrigin, TargetDirection);
+            Hit = false;
 
-			// This must be called at the start of the function, as functions called later in the frame rely on the data.
-			CleanFocusedItemCollection();
+            // This must be called at the start of the function, as functions called later in the frame rely on the data.
+            CleanFocusedItemCollection();
 
-			// Add UI items
-			bool hitUI = GetUIRaycasts(ref m_FocusedItems);
-			FocusInfo mainUIFocus = null;
-			if (hitUI && m_FocusedItems.Count > 0)
-			{
-				mainUIFocus = m_FocusedItems[0];
-			}
-
-			// Perform a preemptive raycast to determine if we are looking at the SR or nothing.
-			// If we are doing either, return out of the function early to avoid doing the extra raycast.
-			// Bug-Fix: This also fixed a bug where the SR would not allow the pins panel to be opened.
-			if (!hitUI)
-			{
-				RaycastHit hit;
-				bool hitSomething = Physics.Raycast(FocusRay, out hit, FocusManager.Instance.MaxGazeDistance, FocusManager.Instance.RaycastLayerMask);
-				if (!hitSomething || hit.transform.gameObject.layer == LayerMask.NameToLayer("SR"))
-				{
-					if (hitSomething)
-					{
-						Position = hit.point;
-						Normal = hit.normal;
-					}
-					else
-					{
-						Position = TargetOrigin + TargetDirection * FocusManager.Instance.MaxGazeDistance;
-						Normal = TargetDirection;
-					}
-					return;
-				}
-			}
-
-			// Add colliders 
-			bool hitCollider = GetColliderRaycasts(ref m_FocusedItems);
-
-			// Check if we hit anything
-			if (hitCollider || hitUI)
-			{
-				// Sort via distance
-				m_FocusedItems.Sort((FocusInfo focusInfo1, FocusInfo focusInfo2) => {
-					int ret = focusInfo1.distance.CompareTo(focusInfo2.distance);
-					if (ret == 0)
-					{
-						Graphic graph1 = focusInfo1.gameObject.GetComponent<Graphic>();
-						Graphic graph2 = focusInfo2.gameObject.GetComponent<Graphic>();
-						if (graph1 != null && graph2 != null)
-						{
-							ret = graph2.depth.CompareTo(graph1.depth);
-						}
-					}
-
-					return ret;
-				});
-
-				// Get the closest valid collider
-				for (int i = 0; i < m_FocusedItems.Count; ++i)
-				{
-					FocusInfo focusInfo = m_FocusedItems[i];
-
-					// Check if the transform has a valid filter
-					if (FocusManager.Instance.ContainsValidFilter(focusInfo.transform))
-					{
-						if (focusInfo.isUI && mainUIFocus != null)
-						{
-							focusInfo = mainUIFocus;
-						}
-
-						hitInfo = focusInfo;
-						Hit = true;
-						break;
-					}
-				}
-			}
-
-			if (hitInfo != null)
-			{
-				// The raycast hit a valid hologram
-				FocusHitInfo = hitInfo;
-				Position = hitInfo.point;
-				Normal = hitInfo.normal;
-			}
-			else
-			{
-				// If raycast did not hit a hologram... Save defaults
-				Position = TargetOrigin + (TargetDirection * FocusManager.Instance.MaxGazeDistance);
-				Normal = TargetDirection;
-			}
+            if (customFocusRays == null || customFocusRays.Length == 0)
+            {
+                CastRayStep(new RayStep(TargetOrigin, TargetOrigin + TargetDirection * FocusManager.Instance.MaxGazeDistance));
+            }
+            else
+            {
+                for (int i = 0; i < customFocusRays.Length; i++)
+                {
+                    if (CastRayStep(customFocusRays[i]))
+                        break;
+                }
+            }
 
 			OnPostRaycast();
 		}
+
+        public virtual bool CastRayStep(RayStep step)
+        {
+            FocusInfo hitInfo = null;
+
+            // Set our FocusRay to this step
+            FocusRay = step;
+
+            // Add UI items
+            bool hitUI = GetUIRaycasts(ref m_FocusedItems);
+            FocusInfo mainUIFocus = null;
+            if (hitUI && m_FocusedItems.Count > 0)
+            {
+                mainUIFocus = m_FocusedItems[0];
+            }
+
+            // Perform a preemptive raycast to determine if we are looking at the SR or nothing.
+            // If we are doing either, return out of the function early to avoid doing the extra raycast.
+            // Bug-Fix: This also fixed a bug where the SR would not allow the pins panel to be opened.
+            if (!hitUI)
+            {
+                RaycastHit hit;
+                bool hitSomething = Physics.Raycast(FocusRay.origin, FocusRay.direction, out hit, FocusRay.length, FocusManager.Instance.RaycastLayerMask);
+                Debug.DrawLine(FocusRay.origin, FocusRay.terminus, hitSomething ? Color.green : Color.red);
+                if (!hitSomething || hit.transform.gameObject.layer == LayerMask.NameToLayer("SR")) // TODO remove this reference or make it a const var
+                {
+                    if (hitSomething)
+                    {
+                        Position = hit.point;
+                        Normal = hit.normal;
+                    }
+                    else
+                    {
+                        Position = step.terminus;// TargetOrigin + TargetDirection * FocusManager.Instance.MaxGazeDistance;
+                        Normal = step.direction;// TargetDirection;
+                    }
+                    return false;
+                }
+            }
+
+            // Add colliders 
+            bool hitCollider = GetColliderRaycasts(ref m_FocusedItems);
+
+            // Check if we hit anything
+            if (hitCollider || hitUI)
+            {
+                // Sort via distance
+                m_FocusedItems.Sort((FocusInfo focusInfo1, FocusInfo focusInfo2) =>
+                {
+                    int ret = focusInfo1.distance.CompareTo(focusInfo2.distance);
+                    if (ret == 0)
+                    {
+                        Graphic graph1 = focusInfo1.gameObject.GetComponent<Graphic>();
+                        Graphic graph2 = focusInfo2.gameObject.GetComponent<Graphic>();
+                        if (graph1 != null && graph2 != null)
+                        {
+                            ret = graph2.depth.CompareTo(graph1.depth);
+                        }
+                    }
+
+                    return ret;
+                });
+
+                // Get the closest valid collider
+                for (int i = 0; i < m_FocusedItems.Count; ++i)
+                {
+                    FocusInfo focusInfo = m_FocusedItems[i];
+
+                    // Check if the transform has a valid filter
+                    if (FocusManager.Instance.ContainsValidFilter(focusInfo.transform))
+                    {
+                        if (focusInfo.isUI && mainUIFocus != null)
+                        {
+                            focusInfo = mainUIFocus;
+                        }
+
+                        hitInfo = focusInfo;
+                        Hit = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hitInfo != null)
+            {
+                // The raycast hit a valid hologram
+                FocusHitInfo = hitInfo;
+                Position = hitInfo.point;
+                Normal = hitInfo.normal;
+            }
+            else
+            {
+                // If raycast did not hit a hologram... Save defaults
+                Position = TargetOrigin + (TargetDirection * FocusManager.Instance.MaxGazeDistance);
+                Normal = TargetDirection;
+            }
+
+            return Hit;
+        }
 
 		/// <summary>
 		/// Update the game object being focused on
@@ -554,7 +586,7 @@ namespace HUX.Focus
 		/// <summary>
 		/// Clears out the focused item in preparation for the next pass.
 		/// </summary>
-		private void CleanFocusedItemCollection()
+		protected void CleanFocusedItemCollection()
 		{
 			for (int i = 0; i < m_FocusedItems.Count; i++)
 			{
@@ -604,7 +636,6 @@ namespace HUX.Focus
 					focusedItems.Add(focusInfo);
 				}
 			}
-
 			return hit;
 		}
 
@@ -667,4 +698,31 @@ namespace HUX.Focus
 		}
 		#endregion
 	}
+
+    [Serializable]
+    public struct RayStep
+    {
+        public RayStep(Vector3 origin, Vector3 terminus)
+        {
+            this.origin = origin;
+            this.terminus = terminus;
+            length = Vector3.Distance(origin, terminus);
+            direction = (this.terminus - this.origin).normalized;
+        }
+
+        public Vector3 origin { get; private set; }
+        public Vector3 terminus { get; private set; }
+        public Vector3 direction { get; private set; }
+        public float length { get; private set; }
+
+        public Vector3 GetPoint(float distance)
+        {
+            return Vector3.MoveTowards(origin, terminus, distance);
+        }
+
+        public static implicit operator Ray(RayStep r)
+        {
+            return new Ray(r.origin, r.direction);
+        }
+    }
 }

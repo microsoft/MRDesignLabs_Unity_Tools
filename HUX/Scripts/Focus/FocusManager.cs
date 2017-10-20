@@ -52,7 +52,7 @@ namespace HUX.Focus
 		/// The focusers being used
 		/// </summary>
 		[SerializeField]
-		private AFocuser[] m_Focusers;
+		private List<AFocuser> m_Focusers;
 
 		public delegate void UpdateEvent();
 
@@ -106,7 +106,7 @@ namespace HUX.Focus
 		{
 			get
 			{
-				return m_Focusers;
+				return m_Focusers.ToArray();
 			}
 		}
 
@@ -142,7 +142,7 @@ namespace HUX.Focus
 		private void Update()
 		{
 			// Update focus
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				if (m_Focusers[index] != null)
 				{
@@ -158,7 +158,7 @@ namespace HUX.Focus
 			if (m_UseFocalPoint && m_GazeFocuser != null && m_GazeFocuser.Cursor != null && m_FixedFocalPoint != Vector3.zero)
 			{
 				Vector3 focalPoint = m_FixedFocalPoint != Vector3.zero ? m_FixedFocalPoint : m_GazeFocuser.Cursor.transform.position;
-				UnityEngine.VR.WSA.HolographicSettings.SetFocusPointForFrame(focalPoint);
+				UnityEngine.XR.WSA.HolographicSettings.SetFocusPointForFrame(focalPoint);
 			}
 #endif
 
@@ -172,13 +172,24 @@ namespace HUX.Focus
 
 		#region Public Functions
 
+        public void AddFocuser(AFocuser focuser)
+        {
+            if (!m_Focusers.Contains(focuser))
+                m_Focusers.Add(focuser);
+        }
+
+        public void RemoveFocuser(AFocuser focuser)
+        {
+            m_Focusers.Remove(focuser);
+        }
+
 		/// <summary>
 		/// Sets all the cursors active or inactive.
 		/// </summary>
 		/// <param name="bActive"> Should the cursor be active. </param>		
 		public void SetAllCursorsActive(bool bActive)
 		{
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				if (m_Focusers[index] != null && m_Focusers[index].Cursor != null)
 				{
@@ -238,7 +249,7 @@ namespace HUX.Focus
 			m_PrevFocusedList.AddRange(m_FocusedList);
 			m_FocusedList.Clear();
 
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				AFocuser focuser = m_Focusers[index];
 				if (focuser != null && focuser.CanInteract)
@@ -247,7 +258,7 @@ namespace HUX.Focus
 				}
 			}
 
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				AFocuser focuser = m_Focusers[index];
 				if (focuser != null && focuser.CanInteract)
@@ -256,7 +267,7 @@ namespace HUX.Focus
 				}
 			}
 
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				AFocuser focuser = m_Focusers[index];
 				if (focuser != null && focuser.CanInteract)
@@ -266,7 +277,7 @@ namespace HUX.Focus
 			}
 
 			FocusArgs args = new FocusArgs();
-			for (int index = 0; index < m_Focusers.Length; index++)
+			for (int index = 0; index < m_Focusers.Count; index++)
 			{
 				AFocuser focuser = m_Focusers[index];
 				if (focuser != null && focuser.CanInteract && focuser.PrimeFocus != focuser.OldPrimeFocus)
