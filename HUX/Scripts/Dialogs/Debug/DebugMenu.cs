@@ -239,7 +239,7 @@ namespace HUX.Dialogs.Debug
                 gameObject.AddComponent<DebugMenuAttributeList>();
             }
 
-            if (m_MenuContainer && (UnityEngine.VR.VRSettings.loadedDeviceName == "Oculus" || UnityEngine.VR.VRSettings.loadedDeviceName == "OpenVR"))
+            if (m_MenuContainer && (UnityEngine.XR.XRSettings.loadedDeviceName == "Oculus" || UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR"))
             {
                 // Scale up -- We have to do this every time the page is dirty.
                 transform.localScale = Vector3.one * m_ScaleForHMD;
