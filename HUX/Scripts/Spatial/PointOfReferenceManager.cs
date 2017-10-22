@@ -5,9 +5,9 @@
 using UnityEngine;
 
 #if UNITY_WSA
-using UnityEngine.VR.WSA;
-using UnityEngine.VR.WSA.Persistence;
-using UnityEngine.VR.WSA.Sharing;
+
+
+
 #endif
 
 using System.Collections;
@@ -24,9 +24,9 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
 #if UNITY_WSA
     List<string> m_MessagesAsync = new List<string>();
     public event System.Action OnPlacement;
-    WorldAnchorStore store = null;
-    private WorldAnchor m_PointOfReference = null;
-    public WorldAnchor PointOfReference
+    UnityEngine.XR.WSA.Persistence.WorldAnchorStore store = null;
+    private UnityEngine.XR.WSA.WorldAnchor m_PointOfReference = null;
+    public UnityEngine.XR.WSA.WorldAnchor PointOfReference
     {
         get { return m_PointOfReference; }
     }
@@ -102,7 +102,7 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
             DestroyImmediate(m_PointOfReference);
         }
 
-        m_PointOfReference = m_PointOfReferenceCube.AddComponent<WorldAnchor>();
+        m_PointOfReference = m_PointOfReferenceCube.AddComponent<UnityEngine.XR.WSA.WorldAnchor>();
         if (StatusText.Instance)
         {
             StatusText.Instance.SetText("Point of Reference Created");
@@ -123,7 +123,7 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
         }
     }
 
-    private void StoreLoaded(WorldAnchorStore store)
+    private void StoreLoaded(UnityEngine.XR.WSA.Persistence.WorldAnchorStore store)
     {
         this.store = store;
 
@@ -177,7 +177,7 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
         Debug.Log("SaveAnchor: Point of Reference Saved.");
     }
 
-    private void SaveAnchorToStore(string id, WorldAnchor worldAnchor)
+    private void SaveAnchorToStore(string id, UnityEngine.XR.WSA.WorldAnchor worldAnchor)
     {
 #if !UNITY_EDITOR
         if ((store != null) && (store.Save(id, worldAnchor)))
@@ -206,12 +206,12 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
 
     public void SetPointOfReference(byte[] pointOfReferenceData)
     {
-        WorldAnchorTransferBatch.ImportAsync(pointOfReferenceData, OnImportComplete);
+        UnityEngine.XR.WSA.Sharing.WorldAnchorTransferBatch.ImportAsync(pointOfReferenceData, OnImportComplete);
     }
 
-    private void OnImportComplete(SerializationCompletionReason completionReason, WorldAnchorTransferBatch deserializedTransferBatch)
+    private void OnImportComplete(UnityEngine.XR.WSA.Sharing.SerializationCompletionReason completionReason, UnityEngine.XR.WSA.Sharing.WorldAnchorTransferBatch deserializedTransferBatch)
     {
-        if (completionReason != SerializationCompletionReason.Succeeded)
+        if (completionReason != UnityEngine.XR.WSA.Sharing.SerializationCompletionReason.Succeeded)
         {
             LogAsync("Failed to import: " + completionReason.ToString());
             return;
