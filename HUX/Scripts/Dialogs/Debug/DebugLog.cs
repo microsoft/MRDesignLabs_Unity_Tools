@@ -385,7 +385,7 @@ namespace HUX.Dialogs.Debug
             Application.logMessageReceived += HandleLog;
             s_DebugOutputs.Add(this);
 
-            if (m_DebugLogObj && (UnityEngine.VR.VRSettings.loadedDeviceName == "Oculus" || UnityEngine.VR.VRSettings.loadedDeviceName == "OpenVR"))
+            if (m_DebugLogObj && (UnityEngine.XR.XRSettings.loadedDeviceName == "Oculus" || UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR"))
             {
                 // Scale up
                 RectTransform rectTransform = m_DebugLogObj.GetComponent<RectTransform>();
