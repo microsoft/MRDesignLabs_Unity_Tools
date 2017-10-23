@@ -61,7 +61,7 @@ public class PointOfReferenceManager : Singleton<PointOfReferenceManager>
 #if UNITY_EDITOR
         m_LoadedAndPlaced = true;
 #else
-        WorldAnchorStore.GetAsync(StoreLoaded);
+        UnityEngine.XR.WSA.Persistence.WorldAnchorStore.GetAsync(StoreLoaded);
 #endif
         
 		InputSources.Instance.hands.OnFingerPressed += OnFingerPressed;
