@@ -10,7 +10,7 @@ using HUX.Utility;
 using HoloToolkit.Unity.SpatialMapping;
 
 #if UNITY_WSA
-using UnityEngine.VR.WSA;
+using UnityEngine.XR.WSA;
 #endif
 
 #if UNITY_WSA && !UNITY_EDITOR

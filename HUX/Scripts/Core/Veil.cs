@@ -241,7 +241,7 @@ namespace HUX
             switch (CurrentDevice)
             {
                 case DeviceTypeEnum.Auto:
-                switch (VRSettings.loadedDeviceName)
+                switch (UnityEngine.XR.XRSettings.loadedDeviceName)
                 {
                     case "Oculus":
                     m_deviceFOV = OCULUS_FOV;
@@ -307,9 +307,9 @@ namespace HUX
 #if UNITY_EDITOR || !UNITY_WSA
                 if (SetVeilFOVOnStartInEditor)
                 {
-                    if (VRDevice.isPresent)
+                    if (UnityEngine.XR.XRDevice.isPresent)
                     {
-                        while (!VRSettings.enabled)
+                        while (!UnityEngine.XR.XRSettings.enabled)
                         {
                             yield return null;
                         }

@@ -7,7 +7,7 @@ using System;
 using HUX.Utility;
 using UnityEngine.EventSystems;
 using HUX.Focus;
-using UnityEngine.VR.WSA.Input;
+
 
 namespace HUX.Interaction
 {
@@ -36,9 +36,9 @@ namespace HUX.Interaction
         /// <summary>
         /// Currently active gesture recognizer.
         /// </summary>
-        public GestureRecognizer ActiveRecognizer { get; private set; }
+        public UnityEngine.XR.WSA.Input.GestureRecognizer ActiveRecognizer { get; private set; }
 
-		public UnityEngine.VR.WSA.Input.InteractionManager ActiveInteractionManager { get; private set; }
+		public UnityEngine.XR.WSA.Input.InteractionManager ActiveInteractionManager { get; private set; }
 
         /// <summary>
         /// is the user currently navigating.
@@ -59,7 +59,7 @@ namespace HUX.Interaction
         /// <summary>
         /// Which gestures the interaction manager's active recognizer will capture
         /// </summary>
-        public GestureSettings RecognizableGesures = GestureSettings.Tap | GestureSettings.DoubleTap | GestureSettings.Hold | GestureSettings.NavigationX | GestureSettings.NavigationY;
+        public UnityEngine.XR.WSA.Input.GestureSettings RecognizableGesures = UnityEngine.XR.WSA.Input.GestureSettings.Tap | UnityEngine.XR.WSA.Input.GestureSettings.DoubleTap | UnityEngine.XR.WSA.Input.GestureSettings.Hold | UnityEngine.XR.WSA.Input.GestureSettings.NavigationX | UnityEngine.XR.WSA.Input.GestureSettings.NavigationY;
 
         /// <summary>
         /// Events that trigger manipulation or navigation is done on the specified object.
@@ -105,7 +105,7 @@ namespace HUX.Interaction
 		// This should be Start instead of Awake right?
 		protected void Start()
         {
-            ActiveRecognizer = new GestureRecognizer();
+            ActiveRecognizer = new UnityEngine.XR.WSA.Input.GestureRecognizer();
 
             ActiveRecognizer.SetRecognizableGestures(RecognizableGesures);
 
@@ -128,21 +128,21 @@ namespace HUX.Interaction
             ActiveRecognizer.StartCapturingGestures();
             SetupEvents(true);
 
-			UnityEngine.VR.WSA.Input.InteractionManager.SourcePressed += InteractionManager_SourcePressedCallback;
-			UnityEngine.VR.WSA.Input.InteractionManager.SourceReleased += InteractionManager_SourceReleasedCallback;
+            UnityEngine.XR.WSA.Input.InteractionManager.InteractionSourcePressed += InteractionManager_SourcePressedCallback;
+            UnityEngine.XR.WSA.Input.InteractionManager.InteractionSourceReleased += InteractionManager_SourceReleasedCallback;
 
 			bLockFocus = true;
 		}
 
-		private void InteractionManager_SourcePressedCallback(InteractionSourceState state)
+        private void InteractionManager_SourcePressedCallback(UnityEngine.XR.WSA.Input.InteractionSourcePressedEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+            AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnPressedEvent(focuser);
 		}
 
-		private void InteractionManager_SourceReleasedCallback(InteractionSourceState state)
+        private void InteractionManager_SourceReleasedCallback(UnityEngine.XR.WSA.Input.InteractionSourceReleasedEventArgs args)
 		{
-			AFocuser focuser = GetFocuserForSource(state.source.kind);
+            AFocuser focuser = GetFocuserForSource(args.state.source.kind);
 			OnReleasedEvent(focuser);
 		}
 
@@ -153,7 +153,7 @@ namespace HUX.Interaction
 			// Only do manipulation event simulation in editor, and should we do it on PC?
 			if (Application.platform == RuntimePlatform.WindowsEditor /*|| Application.platform == RuntimePlatform.WindowsPlayer*/)
 			{
-				AFocuser focuser = GetFocuserForSource(InteractionSourceKind.Hand);
+				AFocuser focuser = GetFocuserForSource(UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand);
 
 				// Use the head's position + forward, since the focuser ray might point to the locked focus
 				Vector3 newPos = Veil.Instance.HeadTransform.position + Veil.Instance.HeadTransform.forward;
@@ -326,18 +326,18 @@ namespace HUX.Interaction
         }
 
 
-		private AFocuser GetFocuserForSource(InteractionSourceKind source)
+		private AFocuser GetFocuserForSource(UnityEngine.XR.WSA.Input.InteractionSourceKind source)
 		{
 			AFocuser focuser = FocusManager.Instance != null ? FocusManager.Instance.GazeFocuser : null;
 			switch (source)
 			{
-				case InteractionSourceKind.Hand:
+				case UnityEngine.XR.WSA.Input.InteractionSourceKind.Hand:
 				{
 					focuser = InputSourceFocuser.GetFocuserForInputSource(InputSources.Instance.hands);
 					break;
 				}
 
-				case InteractionSourceKind.Controller:
+				case UnityEngine.XR.WSA.Input.InteractionSourceKind.Controller:
 				{
 					focuser = InputSourceFocuser.GetFocuserForInputSource(InputSources.Instance.sixDOFRay);
 					break;
@@ -847,7 +847,7 @@ namespace HUX.Interaction
         #endregion
 
         #region Gesture Recognizer Callbacks
-        private void NavigationStartedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationStartedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 relativePosition, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -856,7 +856,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void NavigationUpdatedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationUpdatedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 relativePosition, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -865,7 +865,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void NavigationCompletedCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationCompletedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 relativePosition, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -874,7 +874,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void NavigationCanceledCallback(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+        private void NavigationCanceledCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 relativePosition, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -883,7 +883,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void TappedCallback(InteractionSourceKind source, int tapCount, Ray ray)
+        private void TappedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, int tapCount, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
             if (focuser != null)
@@ -899,7 +899,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void HoldStartedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldStartedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -908,7 +908,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void HoldCompletedCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCompletedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -917,7 +917,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void HoldCanceledCallback(InteractionSourceKind source, Ray ray)
+        private void HoldCanceledCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -926,7 +926,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void ManipulationStartedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationStartedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 position, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -935,7 +935,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void ManipulationUpdatedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationUpdatedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 position, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -944,7 +944,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void ManipulationCompletedCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCompletedCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 position, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
@@ -953,7 +953,7 @@ namespace HUX.Interaction
             }
         }
 
-        private void ManipulationCanceledCallback(InteractionSourceKind source, Vector3 position, Ray ray)
+        private void ManipulationCanceledCallback(UnityEngine.XR.WSA.Input.InteractionSourceKind source, Vector3 position, Ray ray)
         {
 			AFocuser focuser = GetFocuserForSource(source);
 			if (focuser != null)
